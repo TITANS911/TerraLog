@@ -2,39 +2,46 @@ package com.terralog.controller;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.terralog.model.userModel;
-import com.terralog.service.userService; // Nanti pelan-pelan rename ini jadi userService ya
+import com.terralog.service.userService;
 
 @RestController
-@RequestMapping("/api/users") // Ubah ke /users agar lebih umum
+@RequestMapping("/api/users")
 @CrossOrigin(origins = "*")
 public class userController {
 
     @Autowired
-    private userService userService; // Variabel kita namakan userService agar tidak bingung
+    private userService userService;
 
     // --- GET ALL USERS ---
     @GetMapping
     public List<userModel> getAllUsers() {
-        return userService.getAllUsers(); // Method di service masih pakai nama lama nggak apa-apa
+        return userService.getAllUsers();
     }
 
     // --- CREATE USER ---
     @PostMapping
-    public userModel createUser(@RequestBody userModel user) {
-        return userService.saveUser(user);
+    public ResponseEntity<userModel> createUser(@RequestBody userModel user) {
+        userModel createdUser = userService.saveUser(user);
+        return ResponseEntity.ok(createdUser);
     }
 
     // --- GET USER BY ID ---
     @GetMapping("/{id}")
-    public userModel getUserById(@PathVariable Long id) {
-        return userService.getUserById(id);
+    public ResponseEntity<userModel> getUserById(@PathVariable Long id) {
+        userModel user = userService.getUserById(id);
+        if (user != null) {
+            return ResponseEntity.ok(user);
+        } else {
+            return ResponseEntity.notFound().build(); // Kirim status 404 ke React
+        }
     }
 
     // --- UPDATE USER ---
     @PutMapping("/{id}")
-    public userModel updateUser(@PathVariable Long id, @RequestBody userModel dataBaru) {
+    public ResponseEntity<userModel> updateUser(@PathVariable Long id, @RequestBody userModel dataBaru) {
         userModel userLama = userService.getUserById(id);
 
         if (userLama != null) {
@@ -42,24 +49,29 @@ public class userController {
             userLama.setAlamat(dataBaru.getAlamat());
             userLama.setNoHp(dataBaru.getNoHp());
             userLama.setKomplek(dataBaru.getKomplek());
-
-            // Tambahkan field baru untuk User jika sudah ada di model
             userLama.setRole(dataBaru.getRole());
             userLama.setUsername(dataBaru.getUsername());
 
-            // Jangan lupa set password hanya jika tidak kosong
-            if (dataBaru.getPassword() != null && !dataBaru.getPassword().isEmpty()) {
+            // Logic Password: Hanya update jika ada inputan (tidak kosong atau spasi doang)
+            if (dataBaru.getPassword() != null && !dataBaru.getPassword().trim().isEmpty()) {
                 userLama.setPassword(dataBaru.getPassword());
             }
 
-            return userService.saveUser(userLama);
+            userModel updatedUser = userService.saveUser(userLama);
+            return ResponseEntity.ok(updatedUser);
         }
-        return null;
+        
+        return ResponseEntity.notFound().build();
     }
 
     // --- DELETE USER ---
     @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
+    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+        try {
+            userService.deleteUser(id);
+            return ResponseEntity.ok("User dengan ID " + id + " berhasil dihapus");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Gagal menghapus user: " + e.getMessage());
+        }
     }
 }
