@@ -14,6 +14,7 @@ const UserManagement = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(false);
     const [hoveredItem, setHoveredItem] = useState(null);
+    const [isLogoutHovered, setIsLogoutHovered] = useState(false); // Hover state untuk tombol logout
 
     // --- FETCH DATA USER ---
     const fetchUsers = async () => {
@@ -32,6 +33,25 @@ const UserManagement = () => {
     useEffect(() => {
         fetchUsers();
     }, []);
+
+    // --- LOGIKA LOGOUT ---
+    const handleLogout = () => {
+        Swal.fire({
+            title: 'Logout?',
+            text: "Anda akan keluar dari sistem admin.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#1b4332',
+            confirmButtonText: 'Ya, Keluar',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                localStorage.clear();
+                navigate('/login');
+            }
+        });
+    };
 
     const menuItems = [
         { id: 'dash', icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/admin/dashboard' },
@@ -55,7 +75,6 @@ const UserManagement = () => {
         }).then(async (result) => {
             if (result.isConfirmed) {
                 try {
-                    // Menggunakan user_id sesuai database
                     await axios.delete(`http://127.0.0.1:8080/api/users/${userId}`);
                     Swal.fire('Terhapus!', 'Data berhasil dihapus.', 'success');
                     fetchUsers();
@@ -66,7 +85,6 @@ const UserManagement = () => {
         });
     };
 
-    // --- FILTER DATA (Case Insensitive & Trim) ---
     const petugasList = users.filter(u => 
         u.role?.toUpperCase().trim() === 'PETUGAS' && 
         (u.nama?.toLowerCase() || "").includes(searchTerm.toLowerCase())
@@ -82,7 +100,6 @@ const UserManagement = () => {
         <div style={styles.tableCard}>
             <div style={styles.tableHeader}>
                 <div style={styles.titleGroup}>{icon} <h3 style={{margin:0}}>{title}</h3></div>
-                
                 {type === 'PETUGAS' && (
                     <button 
                         style={styles.addButton}
@@ -105,7 +122,6 @@ const UserManagement = () => {
                     </thead>
                     <tbody>
                         {data.length > 0 ? data.map((user) => (
-                            // PAKAI userId (Sesuai model Java)
                             <tr key={user.userId} style={styles.tr}>
                                 <td style={styles.td}>{user.nama}</td>
                                 <td style={styles.td}>{user.username}</td>
@@ -113,19 +129,10 @@ const UserManagement = () => {
                                 <td style={styles.td}>{user.alamat}, {user.komplek}</td>
                                 <td style={styles.td}>
                                     <div style={styles.actionGroup}>
-                                        <button style={styles.editBtn}
-                                           onClick={() => {
-                                              console.log("Data user yang diklik:", user); 
-                                                // Liat di console, apakah adanya 'userId', 'user_id', atau cuma 'id'?
-                                                navigate(`/admin/edit-petugas/${user.userId}`);
-                                            }}
-                                            >
+                                        <button style={styles.editBtn} onClick={() => navigate(`/admin/edit-petugas/${user.userId}`)}>
                                             <Edit size={16} />
                                         </button>
-                                        <button 
-                                            style={styles.deleteBtn} 
-                                            onClick={() => handleDelete(user.userId, user.nama)}
-                                        >
+                                        <button style={styles.deleteBtn} onClick={() => handleDelete(user.userId, user.nama)}>
                                             <Trash2 size={16} />
                                         </button>
                                     </div>
@@ -164,13 +171,28 @@ const UserManagement = () => {
                         </div>
                     ))}
                 </nav>
+
+              <div 
+                        onMouseEnter={() => setIsLogoutHovered(true)}
+                        onMouseLeave={() => setIsLogoutHovered(false)}
+                        onClick={handleLogout}
+                        style={{
+                          ...styles.logoutItem,
+                          ...(isLogoutHovered ? styles.logoutHover : {})
+                        }}
+                      >
+                        <LogOut size={20} /> <span style={{ fontWeight:'bold' }}>Keluar</span>
+                      </div>
+                
                 <div style={styles.profileSection}>
                     <div style={styles.avatar}></div>
-                    <div>
+                    <div style={{flex: 1}}>
                         <div style={{fontWeight: 'bold', fontSize: '14px'}}>{userName}</div>
                         <div style={{fontSize: '10px', opacity: 0.8}}>NRP: 152024023</div>
                     </div>
                 </div>
+
+                
             </aside>
 
             {/* --- MAIN CONTENT --- */}
@@ -222,8 +244,23 @@ const styles = {
     navItem: { display: 'flex', alignItems: 'center', gap: '15px', padding: '12px 15px', marginBottom: '8px', cursor: 'pointer', borderRadius: '10px', transition: '0.3s' },
     activeItem: { backgroundColor: '#2d6a4f' },
     hoverItem: { backgroundColor: 'rgba(255,255,255,0.1)', transform: 'translateX(5px)' },
-    profileSection: { display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)' },
+    profileSection: { display: 'flex', alignItems: 'center', gap: '12px', padding: '20px 5px', borderTop: '1px solid rgba(255,255,255,0.1)' },
     avatar: { width: '38px', height: '38px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.2)' },
+    
+    // Style Logout
+    logoutBtn: { 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: '15px', 
+        padding: '12px 15px', 
+        marginTop: '10px', 
+        cursor: 'pointer', 
+        borderRadius: '10px', 
+        transition: '0.3s',
+        color: '#ff4d4d', // Warna merah untuk indikasi keluar
+    },
+    logoutHover: { backgroundColor: 'rgba(255, 77, 77, 0.1)' },
+
     main: { flex: 1, padding: '30px', overflowY: 'auto' },
     header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' },
     searchBox: { display: 'flex', alignItems: 'center', backgroundColor: '#fff', padding: '8px 15px', borderRadius: '10px', border: '1px solid #1b4332' },
@@ -239,6 +276,10 @@ const styles = {
     actionGroup: { display: 'flex', gap: '8px' },
     editBtn: { backgroundColor: '#e8f5e9', color: '#2d6a4f', border: 'none', padding: '6px', borderRadius: '6px', cursor: 'pointer' },
     deleteBtn: { backgroundColor: '#ffebee', color: '#d32f2f', border: 'none', padding: '6px', borderRadius: '6px', cursor: 'pointer' },
+    logoutItem: { display: 'flex', alignItems: 'center', gap: '15px', padding: '12px 15px', marginBottom: '20px', cursor: 'pointer', borderRadius: '10px', color: '#ff6b6b', transition: 'all 0.3s ease', fontWeight: '600' },
+  logoutHover: { backgroundColor: 'rgba(255, 107, 107, 0.1)', transform: 'translateX(5px)' },
+  profileSection: { display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '20px', borderTop: '1px solid rgba(255,255,255,0.1)' },
+  avatar: { width: '38px', height: '38px', borderRadius: '50%', backgroundColor: '#fff', opacity: 0.5 },
 };
 
 export default UserManagement;

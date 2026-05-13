@@ -1,6 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
+// Landing Page
+import LandingPage from './components/pages/LandingPage';
+
 // Import Halaman Auth
 import Login from './components/pages/Auth/Login';
 import Register from './components/pages/Auth/Register';
@@ -18,7 +21,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
