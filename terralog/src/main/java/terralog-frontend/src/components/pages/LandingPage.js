@@ -48,7 +48,7 @@ const LandingPage = () => {
               { name: 'TENTANG', hash: '#tentang' },
               { name: 'FITUR', hash: '#fitur' },
               { name: 'LAPORAN', hash: '#laporan' },
-              { name: 'KATEGORI', hash: '#kategori' },
+              { name: 'KATEGORI', hash: '/kategori' },
               { name: 'KONTAK', hash: '#kontak' },
             ].map((item) => (
               <a
@@ -57,6 +57,12 @@ const LandingPage = () => {
                 style={getLinkStyle(item.hash)}
                 onClick={(e) => {
                   e.preventDefault(); // Mencegah lompatan instan browser
+
+                  if (item.hash === '/kategori') {
+                    window.location.href = '/kategori'; // Navigasi ke halaman kategori
+                    return;
+                  }
+                  
                   setActiveNav(item.hash);
                 
                   // Mencari elemen target berdasarkan ID (menghapus tanda #)

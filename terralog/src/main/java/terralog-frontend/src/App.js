@@ -4,6 +4,9 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 // Landing Page
 import LandingPage from './components/pages/LandingPage';
 
+// Kategori Page
+import KategoriPage from './components/pages/KategoriPage';
+
 // Import Halaman Auth
 import Login from './components/pages/Auth/Login';
 import Register from './components/pages/Auth/Register';
@@ -22,9 +25,9 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/kategori" element={<KategoriPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-
         {/* --- ADMIN ROUTES --- */}
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         {/* Navigasi Admin Pengguna diarahkan ke UserManagement */}
