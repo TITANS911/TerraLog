@@ -15,12 +15,12 @@ import {
 
 import AdminSidebar from '../AdminSidebar';
 
-const API_URL = 'http://127.0.0.1:8080/api/users';
+const API_URL = 'http://127.0.0.1:8080/api/kategori';
 
-const UserManagement = () => {
+const SampahManagement = () => {
   const navigate = useNavigate();
 
-  const [users, setUsers] = useState([]);
+  const [kategori, setKategori] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
@@ -28,56 +28,63 @@ const UserManagement = () => {
 
   const itemsPerPage = 5;
 
-  const fetchUsers = async () => {
+  const fetchKategori = async () => {
     setLoading(true);
     setErrorMessage('');
 
     try {
       const response = await axios.get(API_URL);
-      setUsers(Array.isArray(response.data) ? response.data : []);
+      setKategori(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
-      console.error('Gagal mengambil data warga:', error);
-      setErrorMessage('Gagal mengambil data warga dari server.');
-      Swal.fire('Error', 'Gagal mengambil data warga dari server.', 'error');
+      console.error('Gagal mengambil data sampah:', error);
+      console.error('Response:', error.response);
+      console.error('Message:', error.message);
+
+      const message =
+        error.response?.data?.message ||
+        error.response?.data ||
+        error.message ||
+        'Gagal mengambil data sampah dari server.';
+
+      setErrorMessage(message);
+      Swal.fire('Error', message, 'error');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchKategori();
   }, []);
 
-  const wargaList = useMemo(() => {
-    return users
-      .filter((user) => user.role?.toUpperCase().trim() === 'WARGA')
-      .filter((user) => {
-        const keyword = searchTerm.toLowerCase();
+  const filteredKategori = useMemo(() => {
+    return kategori.filter((item) => {
+      const keyword = searchTerm.toLowerCase();
 
-        return (
-          user.nama?.toLowerCase().includes(keyword) ||
-          user.username?.toLowerCase().includes(keyword) ||
-          user.alamat?.toLowerCase().includes(keyword) ||
-          user.noHp?.toLowerCase().includes(keyword)
-        );
-      });
-  }, [users, searchTerm]);
+      return (
+        item.namaKategori?.toLowerCase().includes(keyword) ||
+        item.jenisSampah?.toLowerCase?.().includes(keyword) ||
+        item.deskripsi?.toLowerCase?.().includes(keyword) ||
+        item.satuan?.toLowerCase?.().includes(keyword)
+      );
+    });
+  }, [kategori, searchTerm]);
 
-  const totalPages = Math.ceil(wargaList.length / itemsPerPage) || 1;
+  const totalPages = Math.ceil(filteredKategori.length / itemsPerPage) || 1;
 
-  const paginatedWarga = useMemo(() => {
+  const paginatedKategori = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
-    return wargaList.slice(startIndex, startIndex + itemsPerPage);
-  }, [wargaList, currentPage]);
+    return filteredKategori.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredKategori, currentPage]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  const handleDelete = (userId, nama) => {
+  const handleDelete = (idKategori, namaKategori) => {
     Swal.fire({
-      title: 'Hapus Data Warga?',
-      text: `Yakin ingin menghapus ${nama}?`,
+      title: 'Hapus Data Sampah?',
+      text: `Yakin ingin menghapus kategori "${namaKategori}"?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#064D36',
@@ -87,37 +94,37 @@ const UserManagement = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`${API_URL}/${userId}`);
+          await axios.delete(`${API_URL}/${idKategori}`);
 
           Swal.fire({
             icon: 'success',
             title: 'Berhasil',
-            text: 'Data warga berhasil dihapus.',
+            text: 'Data sampah berhasil dihapus.',
             confirmButtonColor: '#064D36'
           });
 
-          fetchUsers();
+          fetchKategori();
         } catch (error) {
-          console.error('Gagal menghapus data warga:', error);
-          Swal.fire('Gagal', 'Data warga gagal dihapus.', 'error');
+          console.error('Gagal menghapus data sampah:', error);
+          Swal.fire('Gagal', 'Data sampah gagal dihapus.', 'error');
         }
       }
     });
   };
 
-  const startNumber = wargaList.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
-  const endNumber = Math.min(currentPage * itemsPerPage, wargaList.length);
+  const startNumber = filteredKategori.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+  const endNumber = Math.min(currentPage * itemsPerPage, filteredKategori.length);
 
   return (
     <div style={styles.container}>
-      <AdminSidebar activeMenu="warga" />
+      <AdminSidebar activeMenu="sampah" />
 
       <main style={styles.main}>
         <div style={styles.contentWrapper}>
           <section style={styles.header}>
             <div>
-              <h1 style={styles.pageTitle}>Data Warga</h1>
-              <p style={styles.subtitle}>Kelola data warga TerraLog.</p>
+              <h1 style={styles.pageTitle}>Data Sampah</h1>
+              <p style={styles.subtitle}>Kelola data sampah TerraLog.</p>
             </div>
 
             <div style={styles.headerRight}>
@@ -138,7 +145,7 @@ const UserManagement = () => {
               <Search size={18} color="#7D8490" />
               <input
                 type="text"
-                placeholder="Cari berdasarkan nama atau alamat..."
+                placeholder="Cari berdasarkan nama warga..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={styles.searchInput}
@@ -147,18 +154,18 @@ const UserManagement = () => {
 
             <div style={styles.totalText}>
               <span>Total:</span>
-              <strong>{wargaList.length}</strong>
-              <span>Warga Terdaftar</span>
+              <strong>{filteredKategori.length}</strong>
+              <span>Kategori</span>
             </div>
           </section>
 
           <div style={styles.actionRow}>
             <button
               style={styles.addButton}
-              onClick={() => navigate('/admin/tambah-warga')}
+              onClick={() => navigate('/admin/tambah-kategori')}
             >
               <Plus size={24} />
-              Tambah Warga
+              Tambah Data Sampah
             </button>
           </div>
 
@@ -167,10 +174,10 @@ const UserManagement = () => {
               <thead>
                 <tr>
                   <th style={{ ...styles.th, width: '70px' }}>No</th>
-                  <th style={styles.th}>Nama Warga</th>
-                  <th style={styles.th}>Username</th>
-                  <th style={styles.th}>Alamat</th>
-                  <th style={styles.th}>No Telp</th>
+                  <th style={styles.th}>Kategori</th>
+                  <th style={styles.th}>Jenis Sampah</th>
+                  <th style={styles.th}>Deskripsi</th>
+                  <th style={styles.th}>Satuan</th>
                   <th style={{ ...styles.th, width: '170px' }}>Aksi</th>
                 </tr>
               </thead>
@@ -179,7 +186,7 @@ const UserManagement = () => {
                 {loading ? (
                   <tr>
                     <td colSpan="6" style={styles.emptyCell}>
-                      Memuat data warga...
+                      Memuat data sampah...
                     </td>
                   </tr>
                 ) : errorMessage ? (
@@ -188,34 +195,34 @@ const UserManagement = () => {
                       {errorMessage}
                     </td>
                   </tr>
-                ) : paginatedWarga.length === 0 ? (
+                ) : paginatedKategori.length === 0 ? (
                   <tr>
                     <td colSpan="6" style={styles.emptyCell}>
-                      Data warga belum tersedia.
+                      Data sampah belum tersedia.
                     </td>
                   </tr>
                 ) : (
-                  paginatedWarga.map((warga, index) => (
-                    <tr key={warga.userId} style={styles.tr}>
+                  paginatedKategori.map((item, index) => (
+                    <tr key={item.idKategori} style={styles.tr}>
                       <td style={styles.td}>
                         {(currentPage - 1) * itemsPerPage + index + 1}
                       </td>
-                      <td style={styles.td}>{warga.nama || '-'}</td>
-                      <td style={styles.td}>{warga.username || '-'}</td>
-                      <td style={styles.td}>{warga.alamat || '-'}</td>
-                      <td style={styles.td}>{warga.noHp || '-'}</td>
+                      <td style={styles.td}>{item.namaKategori || '-'}</td>
+                      <td style={styles.td}>{item.jenisSampah || '-'}</td>
+                      <td style={styles.td}>{item.deskripsi || '-'}</td>
+                      <td style={styles.td}>{item.satuan || '-'}</td>
                       <td style={styles.td}>
                         <div style={styles.actionGroup}>
                           <button
                             style={styles.editButton}
-                            onClick={() => navigate(`/admin/edit-warga/${warga.userId}`)}
+                            onClick={() => navigate(`/admin/edit-kategori/${item.idKategori}`)}
                           >
                             <Edit size={22} />
                           </button>
 
                           <button
                             style={styles.deleteButton}
-                            onClick={() => handleDelete(warga.userId, warga.nama)}
+                            onClick={() => handleDelete(item.idKategori, item.namaKategori)}
                           >
                             <Trash2 size={22} />
                           </button>
@@ -230,7 +237,7 @@ const UserManagement = () => {
 
           <section style={styles.footerRow}>
             <p style={styles.showingText}>
-              Menampilkan <strong>{startNumber} - {endNumber}</strong> dari {wargaList.length} warga
+              Menampilkan <strong>{startNumber} - {endNumber}</strong> dari {filteredKategori.length} kategori
             </p>
 
             <div style={styles.pagination}>
@@ -415,7 +422,7 @@ const styles = {
   },
 
   addButton: {
-    width: '230px',
+    width: '270px',
     height: '46px',
     borderRadius: '12px',
     border: 'none',
@@ -565,4 +572,4 @@ const styles = {
   }
 };
 
-export default UserManagement;
+export default SampahManagement;

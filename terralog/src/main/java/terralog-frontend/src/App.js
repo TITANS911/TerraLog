@@ -24,6 +24,12 @@ import AddWarga from './components/pages/Dashboard/Admin/CRUDWarga/AddWarga';
 import EditWarga from './components/pages/Dashboard/Admin/CRUDWarga/EditWarga';
 import AddKategori from './components/pages/Dashboard/Admin/CRUDKategori/AddKategori';
 import EditKategori from './components/pages/Dashboard/Admin/CRUDKategori/EditKategori';
+import PetugasManagement from './components/pages/Dashboard/Admin/PetugasManagement';
+import SampahManagement from './components/pages/Dashboard/Admin/SampahManagement';
+import TransaksiManagement from './components/pages/Dashboard/Admin/TransaksiManagement';
+import LaporanStatistik from './components/pages/Dashboard/Admin/LaporanStatistik';
+import PengaduanManagement from './components/pages/Dashboard/Admin/PengaduanManagement';
+
 function App() {
   return (
     <Router>
@@ -36,12 +42,15 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         {/* Navigasi Admin Pengguna diarahkan ke UserManagement */}
         <Route path="/admin/pengguna" element={<UserManagement />} />
-
+        <Route path="/admin/petugas" element={<PetugasManagement />} />
+        <Route path="/admin/sampah" element={<SampahManagement />} />
+        <Route path="/admin/transaksi" element={<TransaksiManagement />} />
+        <Route path="/admin/laporan" element={<LaporanStatistik />} />
+        <Route path="/admin/pengaduan" element={<PengaduanManagement />} />
         {/* --- PETUGAS ROUTES --- */}
         <Route path="/petugas/dashboard" element={<PetugasDashboard />} />
         <Route path="/admin/tambah-petugas" element={<AddPetugas />} />
         <Route path="/admin/edit-petugas/:id" element={<EditPetugas />} />
-
         {/* --- WARGA ROUTES --- */}
         <Route path="/dashboard" element={<WargaDashboard />} />
         <Route path="/admin/tambah-warga" element={<AddWarga />} />

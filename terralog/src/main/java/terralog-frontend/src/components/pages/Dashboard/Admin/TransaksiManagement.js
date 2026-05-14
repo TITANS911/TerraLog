@@ -1,26 +1,24 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { useNavigate } from 'react-router-dom';
 import {
   Search,
-  Plus,
-  Edit,
-  Trash2,
   Bell,
   User,
+  Download,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  FileText,
+  ClipboardList,
+  TrendingUp
 } from 'lucide-react';
 
 import AdminSidebar from '../AdminSidebar';
 
-const API_URL = 'http://127.0.0.1:8080/api/users';
+const API_URL = 'http://127.0.0.1:8080/api/transaksi';
 
-const UserManagement = () => {
-  const navigate = useNavigate();
-
-  const [users, setUsers] = useState([]);
+const TransaksiManagement = () => {
+  const [transaksi, setTransaksi] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
@@ -28,96 +26,168 @@ const UserManagement = () => {
 
   const itemsPerPage = 5;
 
-  const fetchUsers = async () => {
+  const fetchTransaksi = async () => {
     setLoading(true);
     setErrorMessage('');
 
     try {
       const response = await axios.get(API_URL);
-      setUsers(Array.isArray(response.data) ? response.data : []);
+      setTransaksi(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
-      console.error('Gagal mengambil data warga:', error);
-      setErrorMessage('Gagal mengambil data warga dari server.');
-      Swal.fire('Error', 'Gagal mengambil data warga dari server.', 'error');
+      console.error('Gagal mengambil data transaksi:', error);
+      console.error('Response:', error.response);
+      console.error('Message:', error.message);
+
+      const message =
+        error.response?.data?.message ||
+        error.response?.data ||
+        error.message ||
+        'Gagal mengambil data transaksi dari server.';
+
+      setErrorMessage(message);
+      Swal.fire('Error', message, 'error');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchTransaksi();
   }, []);
 
-  const wargaList = useMemo(() => {
-    return users
-      .filter((user) => user.role?.toUpperCase().trim() === 'WARGA')
-      .filter((user) => {
-        const keyword = searchTerm.toLowerCase();
+  const getNamaWarga = (item) => {
+    return (
+      item.namaWarga ||
+      item.warga?.nama ||
+      item.user?.nama ||
+      item.nama ||
+      '-'
+    );
+  };
 
-        return (
-          user.nama?.toLowerCase().includes(keyword) ||
-          user.username?.toLowerCase().includes(keyword) ||
-          user.alamat?.toLowerCase().includes(keyword) ||
-          user.noHp?.toLowerCase().includes(keyword)
-        );
-      });
-  }, [users, searchTerm]);
+  const getTanggal = (item) => {
+    return (
+      item.tanggal ||
+      item.tanggalTransaksi ||
+      item.createdAt ||
+      item.waktu ||
+      '-'
+    );
+  };
 
-  const totalPages = Math.ceil(wargaList.length / itemsPerPage) || 1;
+  const getAlamat = (item) => {
+    return (
+      item.alamat ||
+      item.warga?.alamat ||
+      item.user?.alamat ||
+      '-'
+    );
+  };
 
-  const paginatedWarga = useMemo(() => {
+  const getKategori = (item) => {
+    return (
+      item.kategoriSampah ||
+      item.namaKategori ||
+      item.kategori?.namaKategori ||
+      item.kategori ||
+      '-'
+    );
+  };
+
+  const getBerat = (item) => {
+    return (
+      item.totalBerat ||
+      item.berat ||
+      item.jumlahKg ||
+      item.totalKg ||
+      0
+    );
+  };
+
+  const filteredTransaksi = useMemo(() => {
+    return transaksi.filter((item) => {
+      const keyword = searchTerm.toLowerCase();
+
+      return (
+        getNamaWarga(item).toString().toLowerCase().includes(keyword) ||
+        getTanggal(item).toString().toLowerCase().includes(keyword) ||
+        getAlamat(item).toString().toLowerCase().includes(keyword) ||
+        getKategori(item).toString().toLowerCase().includes(keyword) ||
+        getBerat(item).toString().toLowerCase().includes(keyword)
+      );
+    });
+  }, [transaksi, searchTerm]);
+
+  const transaksiHariIni = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10);
+
+    return transaksi.filter((item) => {
+      const tanggal = getTanggal(item).toString();
+      return tanggal.includes(today);
+    }).length;
+  }, [transaksi]);
+
+  const totalPages = Math.ceil(filteredTransaksi.length / itemsPerPage) || 1;
+
+  const paginatedTransaksi = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
-    return wargaList.slice(startIndex, startIndex + itemsPerPage);
-  }, [wargaList, currentPage]);
+    return filteredTransaksi.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredTransaksi, currentPage]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  const handleDelete = (userId, nama) => {
-    Swal.fire({
-      title: 'Hapus Data Warga?',
-      text: `Yakin ingin menghapus ${nama}?`,
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#064D36',
-      cancelButtonColor: '#E11D1D',
-      confirmButtonText: 'Ya, Hapus',
-      cancelButtonText: 'Batal'
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          await axios.delete(`${API_URL}/${userId}`);
+  const handleExport = () => {
+    if (filteredTransaksi.length === 0) {
+      Swal.fire('Info', 'Tidak ada data transaksi untuk diexport.', 'info');
+      return;
+    }
 
-          Swal.fire({
-            icon: 'success',
-            title: 'Berhasil',
-            text: 'Data warga berhasil dihapus.',
-            confirmButtonColor: '#064D36'
-          });
+    const header = ['No', 'Warga', 'Tanggal', 'Alamat', 'Kategori Sampah', 'Total Berat (kg)'];
 
-          fetchUsers();
-        } catch (error) {
-          console.error('Gagal menghapus data warga:', error);
-          Swal.fire('Gagal', 'Data warga gagal dihapus.', 'error');
-        }
-      }
+    const rows = filteredTransaksi.map((item, index) => [
+      index + 1,
+      getNamaWarga(item),
+      getTanggal(item),
+      getAlamat(item),
+      getKategori(item),
+      getBerat(item)
+    ]);
+
+    const csvContent = [header, ...rows]
+      .map((row) => row.map((field) => `"${field}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], {
+      type: 'text/csv;charset=utf-8;'
     });
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+
+    link.href = url;
+    link.setAttribute('download', 'data-transaksi-terralog.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    URL.revokeObjectURL(url);
   };
 
-  const startNumber = wargaList.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
-  const endNumber = Math.min(currentPage * itemsPerPage, wargaList.length);
+  const startNumber = filteredTransaksi.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+  const endNumber = Math.min(currentPage * itemsPerPage, filteredTransaksi.length);
 
   return (
     <div style={styles.container}>
-      <AdminSidebar activeMenu="warga" />
+      <AdminSidebar activeMenu="transaksi" />
 
       <main style={styles.main}>
         <div style={styles.contentWrapper}>
           <section style={styles.header}>
             <div>
-              <h1 style={styles.pageTitle}>Data Warga</h1>
-              <p style={styles.subtitle}>Kelola data warga TerraLog.</p>
+              <h1 style={styles.pageTitle}>Data Transaksi</h1>
+              <p style={styles.subtitle}>Kelola data transaksi TeraaLog.</p>
             </div>
 
             <div style={styles.headerRight}>
@@ -130,6 +200,54 @@ const UserManagement = () => {
               <button style={styles.circleButton}>
                 <User size={22} color="#111" />
               </button>
+            </div>
+          </section>
+
+          <section style={styles.statsGrid}>
+            <div style={styles.statCard}>
+              <div style={{ ...styles.statIcon, backgroundColor: '#39A96B' }}>
+                <FileText size={26} color="#fff" />
+              </div>
+
+              <div>
+                <h3 style={styles.statTitle}>Total Transaksi</h3>
+
+                <div style={styles.statValueWrap}>
+                  <span style={{ ...styles.statValue, color: '#39A96B' }}>
+                    {transaksi.length}
+                  </span>
+                  <span style={styles.statUnit}>transaksi</span>
+                </div>
+
+                <div style={styles.statTrend}>
+                  <TrendingUp size={16} color="#2DA86B" />
+                  <span style={styles.trendText}>12,5%</span>
+                  <span style={styles.trendSubtext}>dari bulan lalu</span>
+                </div>
+              </div>
+            </div>
+
+            <div style={styles.statCard}>
+              <div style={{ ...styles.statIcon, backgroundColor: '#5B9CF6' }}>
+                <ClipboardList size={26} color="#fff" />
+              </div>
+
+              <div>
+                <h3 style={styles.statTitle}>Transaksi Hari Ini</h3>
+
+                <div style={styles.statValueWrap}>
+                  <span style={{ ...styles.statValue, color: '#5B9CF6' }}>
+                    {transaksiHariIni}
+                  </span>
+                  <span style={styles.statUnit}>transaksi</span>
+                </div>
+
+                <div style={styles.statTrend}>
+                  <TrendingUp size={16} color="#2DA86B" />
+                  <span style={styles.trendText}>12,5%</span>
+                  <span style={styles.trendSubtext}>dari kemarin</span>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -147,18 +265,15 @@ const UserManagement = () => {
 
             <div style={styles.totalText}>
               <span>Total:</span>
-              <strong>{wargaList.length}</strong>
-              <span>Warga Terdaftar</span>
+              <strong>{filteredTransaksi.length}</strong>
+              <span>Transaksi</span>
             </div>
           </section>
 
           <div style={styles.actionRow}>
-            <button
-              style={styles.addButton}
-              onClick={() => navigate('/admin/tambah-warga')}
-            >
-              <Plus size={24} />
-              Tambah Warga
+            <button style={styles.exportButton} onClick={handleExport}>
+              <Download size={21} />
+              Export
             </button>
           </div>
 
@@ -166,12 +281,12 @@ const UserManagement = () => {
             <table style={styles.table}>
               <thead>
                 <tr>
-                  <th style={{ ...styles.th, width: '70px' }}>No</th>
-                  <th style={styles.th}>Nama Warga</th>
-                  <th style={styles.th}>Username</th>
+                  <th style={{ ...styles.th, width: '80px' }}>No</th>
+                  <th style={styles.th}>Warga</th>
+                  <th style={styles.th}>Tanggal</th>
                   <th style={styles.th}>Alamat</th>
-                  <th style={styles.th}>No Telp</th>
-                  <th style={{ ...styles.th, width: '170px' }}>Aksi</th>
+                  <th style={styles.th}>Kategori Sampah</th>
+                  <th style={styles.th}>Total Berat (kg)</th>
                 </tr>
               </thead>
 
@@ -179,7 +294,7 @@ const UserManagement = () => {
                 {loading ? (
                   <tr>
                     <td colSpan="6" style={styles.emptyCell}>
-                      Memuat data warga...
+                      Memuat data transaksi...
                     </td>
                   </tr>
                 ) : errorMessage ? (
@@ -188,39 +303,23 @@ const UserManagement = () => {
                       {errorMessage}
                     </td>
                   </tr>
-                ) : paginatedWarga.length === 0 ? (
+                ) : paginatedTransaksi.length === 0 ? (
                   <tr>
                     <td colSpan="6" style={styles.emptyCell}>
-                      Data warga belum tersedia.
+                      Data transaksi belum tersedia.
                     </td>
                   </tr>
                 ) : (
-                  paginatedWarga.map((warga, index) => (
-                    <tr key={warga.userId} style={styles.tr}>
+                  paginatedTransaksi.map((item, index) => (
+                    <tr key={item.idTransaksi || item.transaksiId || item.id || index} style={styles.tr}>
                       <td style={styles.td}>
                         {(currentPage - 1) * itemsPerPage + index + 1}
                       </td>
-                      <td style={styles.td}>{warga.nama || '-'}</td>
-                      <td style={styles.td}>{warga.username || '-'}</td>
-                      <td style={styles.td}>{warga.alamat || '-'}</td>
-                      <td style={styles.td}>{warga.noHp || '-'}</td>
-                      <td style={styles.td}>
-                        <div style={styles.actionGroup}>
-                          <button
-                            style={styles.editButton}
-                            onClick={() => navigate(`/admin/edit-warga/${warga.userId}`)}
-                          >
-                            <Edit size={22} />
-                          </button>
-
-                          <button
-                            style={styles.deleteButton}
-                            onClick={() => handleDelete(warga.userId, warga.nama)}
-                          >
-                            <Trash2 size={22} />
-                          </button>
-                        </div>
-                      </td>
+                      <td style={styles.td}>{getNamaWarga(item)}</td>
+                      <td style={styles.td}>{getTanggal(item)}</td>
+                      <td style={styles.td}>{getAlamat(item)}</td>
+                      <td style={styles.td}>{getKategori(item)}</td>
+                      <td style={styles.td}>{getBerat(item)}</td>
                     </tr>
                   ))
                 )}
@@ -230,7 +329,7 @@ const UserManagement = () => {
 
           <section style={styles.footerRow}>
             <p style={styles.showingText}>
-              Menampilkan <strong>{startNumber} - {endNumber}</strong> dari {wargaList.length} warga
+              Menampilkan <strong>{startNumber} - {endNumber}</strong> dari {filteredTransaksi.length} transaksi
             </p>
 
             <div style={styles.pagination}>
@@ -365,6 +464,78 @@ const styles = {
     cursor: 'pointer'
   },
 
+  statsGrid: {
+    display: 'grid',
+    gridTemplateColumns: '260px 300px',
+    gap: '28px',
+    marginBottom: '28px'
+  },
+
+  statCard: {
+    minHeight: '126px',
+    backgroundColor: '#fff',
+    borderRadius: '24px',
+    border: '1px solid #E5E5E5',
+    boxShadow: '0 2px 0 rgba(0,0,0,0.25)',
+    padding: '22px',
+    boxSizing: 'border-box',
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '16px'
+  },
+
+  statIcon: {
+    width: '44px',
+    height: '44px',
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0
+  },
+
+  statTitle: {
+    margin: '3px 0 8px 0',
+    fontSize: '18px',
+    color: '#111',
+    fontWeight: '800'
+  },
+
+  statValueWrap: {
+    display: 'flex',
+    alignItems: 'flex-end',
+    gap: '6px',
+    marginBottom: '12px'
+  },
+
+  statValue: {
+    fontSize: '40px',
+    lineHeight: '0.85',
+    fontWeight: '900'
+  },
+
+  statUnit: {
+    fontSize: '15px',
+    color: '#777',
+    fontWeight: '600'
+  },
+
+  statTrend: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '7px',
+    fontSize: '12px'
+  },
+
+  trendText: {
+    color: '#2DA86B',
+    fontWeight: '700'
+  },
+
+  trendSubtext: {
+    color: '#7D7D7D'
+  },
+
   searchSection: {
     minHeight: '76px',
     borderRadius: '28px',
@@ -414,20 +585,20 @@ const styles = {
     marginBottom: '16px'
   },
 
-  addButton: {
-    width: '230px',
-    height: '46px',
-    borderRadius: '12px',
+  exportButton: {
+    width: '125px',
+    height: '42px',
+    borderRadius: '10px',
     border: 'none',
     backgroundColor: '#FFD21A',
     color: '#064D36',
-    fontSize: '17px',
+    fontSize: '15px',
     fontWeight: '800',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '12px',
+    gap: '9px',
     fontFamily: "'Poppins', sans-serif"
   },
 
@@ -476,39 +647,6 @@ const styles = {
     color: '#8A8A8A',
     fontSize: '15px',
     backgroundColor: '#F7FBFA'
-  },
-
-  actionGroup: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '12px'
-  },
-
-  editButton: {
-    width: '50px',
-    height: '44px',
-    borderRadius: '9px',
-    border: 'none',
-    backgroundColor: '#064D36',
-    color: '#fff',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-
-  deleteButton: {
-    width: '50px',
-    height: '44px',
-    borderRadius: '9px',
-    border: 'none',
-    backgroundColor: '#FF1111',
-    color: '#fff',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
   },
 
   footerRow: {
@@ -565,4 +703,4 @@ const styles = {
   }
 };
 
-export default UserManagement;
+export default TransaksiManagement;
