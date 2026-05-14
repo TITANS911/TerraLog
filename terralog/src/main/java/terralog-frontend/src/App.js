@@ -17,6 +17,10 @@ import WargaDashboard from './components/pages/Dashboard/WargaDashboard';
 import UserManagement from './components/pages/Dashboard/Admin/UserManagement';
 import AddPetugas from './components/pages/Dashboard/Admin/CRUDPetugas/AddPetugas';
 import EditPetugas from './components/pages/Dashboard/Admin/CRUDPetugas/EditPetugas';
+import AddWarga from './components/pages/Dashboard/Admin/CRUDWarga/AddWarga';
+import EditWarga from './components/pages/Dashboard/Admin/CRUDWarga/EditWarga';
+import AddKategori from './components/pages/Dashboard/Admin/CRUDKategori/AddKategori';
+import EditKategori from './components/pages/Dashboard/Admin/CRUDKategori/EditKategori';
 function App() {
   return (
     <Router>
@@ -37,6 +41,10 @@ function App() {
 
         {/* --- WARGA ROUTES --- */}
         <Route path="/dashboard" element={<WargaDashboard />} />
+        <Route path="/admin/tambah-warga" element={<AddWarga />} />
+        <Route path="/admin/edit-warga/:id" element={<EditWarga />} />
+        <Route path="/admin/tambah-kategori" element={<AddKategori />} />
+        <Route path="/admin/edit-kategori/:id" element={<EditKategori />} />
       </Routes>
     </Router>
   );

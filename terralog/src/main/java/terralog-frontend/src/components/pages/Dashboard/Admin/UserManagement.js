@@ -4,13 +4,14 @@ import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import { 
     UserPlus, Edit, Trash2, Search, UserCheck, Shield,
-    LayoutDashboard, FileText, MapPin, Users, Clock, MessageSquare, LogOut 
+    LayoutDashboard, FileText, MapPin, Users, Clock, MessageSquare, LogOut, Tag, PlusCircle
 } from 'lucide-react';
 
 const UserManagement = () => {
     const navigate = useNavigate();
     const userName = localStorage.getItem('nama') || 'Admin';
     const [users, setUsers] = useState([]);
+    const [kategori, setKategori] = useState([]);// State untuk kategori
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(false);
     const [hoveredItem, setHoveredItem] = useState(null);
@@ -30,8 +31,26 @@ const UserManagement = () => {
         }
     };
 
+    // --- FETCH DATA KATEGORI ---
+  const fetchKategori = async () => {
+      setLoading(true);
+      try {
+          // Pastikan endpoint API-nya sesuai dengan yang ada di backend (Java/Spring)
+          const response = await axios.get('http://127.0.0.1:8080/api/kategori');
+          
+          // Simpan data ke state categories
+          setKategori(response.data); 
+      } catch (error) {
+          console.error("Error fetch kategori:", error);
+          Swal.fire('Error', 'Gagal mengambil data kategori', 'error');
+      } finally {
+          setLoading(false);
+      }
+  };
+
     useEffect(() => {
         fetchUsers();
+        fetchKategori();
     }, []);
 
     // --- LOGIKA LOGOUT ---
@@ -65,7 +84,7 @@ const UserManagement = () => {
     // --- LOGIKA DELETE ---
     const handleDelete = (userId, nama) => {
         Swal.fire({
-            title: 'Hapus Pengguna?',
+            title: 'Hapus?',
             text: `Yakin ingin menghapus ${nama}?`,
             icon: 'warning',
             showCancelButton: true,
@@ -85,6 +104,35 @@ const UserManagement = () => {
         });
     };
 
+    // --- LOGIKA DELETE KATEGORI ---
+const handleDeleteKategori = (id, namaKategori) => {
+    Swal.fire({
+        title: 'Hapus Kategori?',
+        text: `Apakah kamu yakin ingin menghapus kategori "${namaKategori}"?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#1b4332', // Hijau tua sesuai tema TERRA
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                // Pastikan endpoint sesuai dengan @DeleteMapping di Backend Java kamu
+                await axios.delete(`http://127.0.0.1:8080/api/kategori/${id}`);
+                
+                Swal.fire('Terhapus!', 'Kategori berhasil dihapus.', 'success');
+                
+                // Panggil kembali fetchKategori agar tabel otomatis terupdate
+                fetchKategori(); 
+            } catch (error) {
+                console.error("Error deleting kategori:", error);
+                Swal.fire('Gagal!', 'Gagal menghapus kategori.', 'error');
+            }
+        }
+    });
+};
+
     const petugasList = users.filter(u => 
         u.role?.toUpperCase().trim() === 'PETUGAS' && 
         (u.nama?.toLowerCase() || "").includes(searchTerm.toLowerCase())
@@ -95,59 +143,105 @@ const UserManagement = () => {
         (u.nama?.toLowerCase() || "").includes(searchTerm.toLowerCase())
     );
 
+  const filteredKategori = kategori.filter(k => 
+    (k.namaKategori?.toLowerCase() || "").includes(searchTerm.toLowerCase())
+);
+
     // --- KOMPONEN TABEL REUSABLE ---
     const UserTable = ({ title, data, icon, type }) => (
-        <div style={styles.tableCard}>
-            <div style={styles.tableHeader}>
-                <div style={styles.titleGroup}>{icon} <h3 style={{margin:0}}>{title}</h3></div>
-                {type === 'PETUGAS' && (
-                    <button 
-                        style={styles.addButton}
-                        onClick={() => navigate('/admin/tambah-petugas')}
-                    >
-                        <UserPlus size={16} /> Tambah Petugas
-                    </button>
-                )}
-            </div>
-            <div style={{overflowX: 'auto'}}>
-                <table style={styles.table}>
-                    <thead>
-                        <tr>
-                            <th style={styles.th}>Nama</th>
-                            <th style={styles.th}>Username</th>
-                            <th style={styles.th}>No. HP</th>
-                            <th style={styles.th}>Alamat / Blok</th>
-                            <th style={styles.th}>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {data.length > 0 ? data.map((user) => (
-                            <tr key={user.userId} style={styles.tr}>
-                                <td style={styles.td}>{user.nama}</td>
-                                <td style={styles.td}>{user.username}</td>
-                                <td style={styles.td}>{user.noHp || '-'}</td>
-                                <td style={styles.td}>{user.alamat}, {user.komplek}</td>
-                                <td style={styles.td}>
-                                    <div style={styles.actionGroup}>
-                                        <button style={styles.editBtn} onClick={() => navigate(`/admin/edit-petugas/${user.userId}`)}>
-                                            <Edit size={16} />
-                                        </button>
-                                        <button style={styles.deleteBtn} onClick={() => handleDelete(user.userId, user.nama)}>
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        )) : (
-                            <tr>
-                                <td colSpan="5" style={{textAlign: 'center', padding: '20px', color: '#999'}}>Belum ada data {title}</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
+    <div style={styles.tableCard}>
+        <div style={styles.tableHeader}>
+            <div style={styles.titleGroup}>{icon} <h3 style={{margin:0}}>{title}</h3></div>
+            
+            {/* Tombol Tambah khusus Kategori */}
+            {type === 'KATEGORI' && (
+                <button 
+                    style={styles.addButton}
+                    onClick={() => navigate('/admin/tambah-kategori')}
+                >
+                    <PlusCircle size={16} /> Tambah Kategori
+                </button>
+            )}
+
+            {/* Tombol Tambah Petugas/Warga tetap seperti kode lama kamu */}
+            {type === 'PETUGAS' && (
+                <button style={styles.addButton} onClick={() => navigate('/admin/tambah-petugas')}>
+                    <UserPlus size={16} /> Tambah Petugas
+                </button>
+            )}
+            {type === 'WARGA' && (
+                <button style={styles.addButton} onClick={() => navigate('/admin/tambah-warga')}>
+                    <UserPlus size={16} /> Tambah Warga
+                </button>
+            )}
         </div>
-    );
+
+        <div style={{overflowX: 'auto'}}>
+            <table style={styles.table}>
+                <thead>
+                    <tr>
+                        {type === 'KATEGORI' ? (
+                            <>
+                                <th style={styles.th}>Nama Kategori</th>
+                                <th style={styles.th}>Aksi</th>
+                            </>
+                        ) : (
+                            <>
+                                <th style={styles.th}>Nama</th>
+                                <th style={styles.th}>Username</th>
+                                <th style={styles.th}>No. HP</th>
+                                <th style={styles.th}>Alamat</th>
+                                <th style={styles.th}>Aksi</th>
+                            </>
+                        )}
+                    </tr>
+                </thead>
+                <tbody>
+                    {data.length > 0 ? data.map((item) => (
+                        <tr key={type === 'KATEGORI' ? item.idKategori : item.userId} style={styles.tr}>
+                            {type === 'KATEGORI' ? (
+                                <>
+                                    <td style={styles.td}>{item.namaKategori}</td>
+                                    <td style={styles.td}>
+                                        <div style={styles.actionGroup}>
+                                            <button style={styles.editBtn} onClick={() => navigate(`/admin/edit-kategori/${item.idKategori}`)}> <Edit size={16} /> </button>
+                                            <button style={styles.deleteBtn} onClick={() => handleDeleteKategori(item.idKategori, item.namaKategori)}>
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </>
+                            ) : (
+                                <>
+                                    <td style={styles.td}>{item.nama}</td>
+                                    <td style={styles.td}>{item.username}</td>
+                                    <td style={styles.td}>{item.noHp || '-'}</td>
+                                    <td style={styles.td}>{item.alamat}</td>
+                                    <td style={styles.td}>
+                                        <div style={styles.actionGroup}>
+                                            <button style={styles.editBtn} onClick={() => navigate(`/admin/edit-${type.toLowerCase()}/${item.userId}`)}>
+                                                <Edit size={16} />
+                                            </button>
+                                            <button style={styles.deleteBtn} onClick={() => handleDelete(item.userId, item.nama)}>
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </>
+                            )}
+                        </tr>
+                    )) : (
+                        <tr>
+                            <td colSpan={type === 'KATEGORI' ? "2" : "5"} style={{textAlign: 'center', padding: '20px', color: '#999'}}>
+                                Belum ada data {title}
+                            </td>
+                        </tr>
+                    )}
+                </tbody>
+            </table>
+        </div>
+    </div>
+);
 
     return (
         <div style={styles.layout}>
@@ -229,6 +323,13 @@ const UserManagement = () => {
                             icon={<UserCheck color="#1b4332" />} 
                             type="WARGA" 
                         />
+                        <div style={{height: '30px'}}></div>
+                        <UserTable 
+                            title="List Kategori" 
+                            data={filteredKategori} // Gunakan data hasil filter search
+                            icon={<Tag color="#1b4332" />} // Pakai icon Tag supaya beda
+                            type="KATEGORI" 
+                        />      
                     </div>
                 )}
             </main>
@@ -282,4 +383,4 @@ const styles = {
   avatar: { width: '38px', height: '38px', borderRadius: '50%', backgroundColor: '#fff', opacity: 0.5 },
 };
 
-export default UserManagement;
+export default UserManagement; // Pastikan ada kata 'default'

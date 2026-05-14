@@ -4,47 +4,70 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { LayoutDashboard, FileText, MapPin, Users, Clock, MessageSquare, ArrowLeft } from 'lucide-react';
 
-const AddPetugas = () => {
+const EditWarga = () => {
     const navigate = useNavigate();
-    const { id } = useParams();
-    const isEdit = !!id;
+    const { id } = useParams(); // Ambil ID dari URL
     const userName = localStorage.getItem('nama') || 'Admin';
 
     const [formData, setFormData] = useState({
         nama: '',
         username: '',
-        password: '',
+        password: '', 
         noHp: '',
         alamat: '',
         komplek: '',
         role: 'PETUGAS'
     });
 
-    // --- LOGIKA FETCH DATA UNTUK AUTO-FILL ---
+    // --- FETCH DATA LAMA (AUTO-FILL) ---
     useEffect(() => {
-    if (isEdit) {
-        console.log("Sedang mengambil data untuk ID:", id); // Cek ID-nya muncul gak
-        axios.get(`http://127.0.0.1:8080/api/users/${id}`)
-            .then(res => {
-                console.log("Data dari Java:", res.data); // Cek isi datanya
-                setFormData({
-                    nama: res.data.nama || '',
-                    username: res.data.username || '',
-                    noHp: res.data.no_hp || res.data.noHp || '', 
-                    alamat: res.data.alamat || '',
-                    komplek: res.data.komplek || '',
-                    role: res.data.role || 'PETUGAS',
-                    password: ''
-                });
-            })
-            .catch(err => {
-                // Ini bakal kasih tau di console kenapa dia gagal (404, 500, atau 400)
-                console.error("Detail Error Axios:", err.response); 
-                Swal.fire('Error', `Gagal memuat data: ${err.response?.status || 'Server Mati'}`, 'error');
+    const loadPetugas = async () => {
+        try {
+            console.log("Mengambil data untuk ID:", id); // Cek apakah ID-nya muncul
+            const res = await axios.get(`http://127.0.0.1:8080/api/users/${id}`);
+            console.log("Data mentah dari Java:", res.data); // Cek nama field di sini
+            
+            const data = res.data;
+            setFormData({
+                nama: data.nama || '',
+                username: data.username || '',
+                // Gunakan pencocokan fleksibel jika Java mengirim snake_case
+                noHp: data.noHp || data.no_hp || '', 
+                alamat: data.alamat || '',
+                komplek: data.komplek || '',
+                role: data.role || 'PETUGAS',
+                password: '' 
             });
+        } catch (err) {
+            console.error("Gagal load data:", err);
+            Swal.fire('Error', 'Data petugas tidak ditemukan!', 'error');
+            navigate('/admin/pengguna');
+        }
+    };
+    if (id && id !== "undefined") {
+        loadPetugas();
     }
-}, [id, isEdit]);
+}, [id, navigate]);
 
+    // --- LOGIKA UPDATE ---
+    const handleUpdate = async (e) => {
+        e.preventDefault();
+        try {
+            // Payload disesuaikan dengan userModel.java kamu
+            const payload = { ...formData };
+            // Jangan kirim password kalau user tidak mengetik apa-apa
+            if (!payload.password) delete payload.password;
+
+            await axios.put(`http://127.0.0.1:8080/api/users/${id}`, payload);
+            Swal.fire('Berhasil!', 'Data petugas telah diperbarui', 'success');
+            navigate('/admin/pengguna');
+        } catch (error) {
+            console.error("Gagal Update:", error.response?.data);
+            Swal.fire('Gagal!', 'Cek kembali koneksi atau format data', 'error');
+        }
+    };
+
+    // Sidebar Items (Sama dengan UserManagement)
     const menuItems = [
         { id: 'dash', icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/admin/dashboard' },
         { id: 'lap', icon: <FileText size={20} />, label: 'Laporan Sampah', path: '/admin/laporan' },
@@ -54,41 +77,6 @@ const AddPetugas = () => {
         { id: 'adu', icon: <MessageSquare size={20} />, label: 'Pengaduan', path: '/admin/pengaduan' },
     ];
 
-    // --- LOGIKA SUBMIT (POST & PUT) ---
-    const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    // Pastikan key yang dikirim ke Backend konsisten
-    const payload = {
-        nama: formData.nama,
-        username: formData.username,
-        noHp: formData.noHp, // UBAH dari no_hp menjadi noHp
-        alamat: formData.alamat,
-        komplek: formData.komplek,
-        role: formData.role
-    };
-
-    if (formData.password) {
-        payload.password = formData.password;
-    }
-
-        try {
-            if (isEdit) {
-                // Gunakan PUT untuk update
-                await axios.put(`http://127.0.0.1:8080/api/users/${id}`, payload);
-                Swal.fire('Berhasil!', 'Data petugas diperbarui', 'success');
-            } else {
-                // Gunakan POST untuk tambah baru
-                await axios.post('http://127.0.0.1:8080/api/users', payload);
-                Swal.fire('Berhasil!', 'Petugas baru ditambahkan', 'success');
-            }
-            navigate('/admin/pengguna');
-        } catch (error) {
-            console.error("Error detail:", error.response?.data);
-            Swal.fire('Gagal!', 'Terjadi kesalahan sistem atau format data salah', 'error');
-        }
-    };
-
     return (
         <div style={styles.layout}>
             <aside style={styles.sidebar}>
@@ -96,7 +84,7 @@ const AddPetugas = () => {
                 <nav style={styles.nav}>
                     {menuItems.map((item) => (
                         <div key={item.id} onClick={() => navigate(item.path)}
-                            style={{...styles.navItem, ...(item.id === 'peng' ? styles.activeItem : {})}}>
+                             style={{...styles.navItem, ...(item.id === 'peng' ? styles.activeItem : {})}}>
                             {item.icon} <span>{item.label}</span>
                         </div>
                     ))}
@@ -109,10 +97,8 @@ const AddPetugas = () => {
                 </button>
 
                 <div style={styles.formCard}>
-                    <h2 style={{color: '#1b4332', marginBottom: '20px'}}>
-                        {isEdit ? 'Edit Data Petugas' : 'Tambah Petugas Baru'}
-                    </h2>
-                    <form onSubmit={handleSubmit} style={styles.form}>
+                    <h2 style={{color: '#1b4332', marginBottom: '20px'}}>Edit Data Petugas</h2>
+                    <form onSubmit={handleUpdate} style={styles.form}>
                         <div style={styles.row}>
                             <div style={styles.field}>
                                 <label>Nama Lengkap</label>
@@ -124,22 +110,19 @@ const AddPetugas = () => {
                             </div>
                         </div>
 
-                        {/* Password hanya required kalau sedang TAMBAH baru */}
                         <div style={styles.field}>
-                            <label>Password {isEdit && <span style={{fontSize: '11px', color: 'gray'}}>(Kosongkan jika tidak ingin ganti)</span>}</label>
-                            <input type="password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} required={!isEdit} style={styles.input} />
+                            <label>Password <span style={{fontSize: '11px', color: 'gray'}}>(Kosongkan jika tidak ganti)</span></label>
+                            <input type="password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} style={styles.input} />
                         </div>
 
                         <div style={styles.row}>
                             <div style={styles.field}>
                                 <label>No. HP</label>
-                                <input 
-                                    type="text" 
-                                    name="noHp" // Tambahkan ini
-                                    value={formData.noHp} 
-                                    onChange={e => setFormData({...formData, noHp: e.target.value})} 
-                                    style={styles.input} 
-                                />
+                                <input type="text" value={formData.noHp} onChange={e => setFormData({...formData, noHp: e.target.value})} style={styles.input} />
+                            </div>
+                            <div style={styles.field}>
+                                <label>Komplek / Blok</label>
+                                <input type="text" value={formData.komplek} onChange={e => setFormData({...formData, komplek: e.target.value})} style={styles.input} />
                             </div>
                         </div>
 
@@ -148,9 +131,7 @@ const AddPetugas = () => {
                             <textarea value={formData.alamat} onChange={e => setFormData({...formData, alamat: e.target.value})} style={{...styles.input, height: '80px'}} />
                         </div>
 
-                        <button type="submit" style={styles.saveBtn}>
-                            {isEdit ? 'Simpan Perubahan' : 'Tambahkan Petugas'}
-                        </button>
+                        <button type="submit" style={styles.saveBtn}>Update Data Petugas</button>
                     </form>
                 </div>
             </main>
@@ -158,6 +139,7 @@ const AddPetugas = () => {
     );
 };
 
+// Copy styles dari UserManagement kamu agar tampilannya identik
 const styles = {
     layout: { display: 'flex', height: '100vh', backgroundColor: '#f5f6f8' },
     sidebar: { width: '260px', backgroundColor: '#1b4332', color: '#fff', display: 'flex', flexDirection: 'column', padding: '25px 15px' },
@@ -175,4 +157,4 @@ const styles = {
     saveBtn: { backgroundColor: '#1b4332', color: '#fff', padding: '15px', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px', marginTop: '10px' }
 };
 
-export default AddPetugas;
+export default EditWarga;

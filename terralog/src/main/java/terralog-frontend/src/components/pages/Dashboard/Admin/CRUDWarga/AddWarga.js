@@ -4,7 +4,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { LayoutDashboard, FileText, MapPin, Users, Clock, MessageSquare, ArrowLeft } from 'lucide-react';
 
-const AddPetugas = () => {
+const AddWarga = () => {
     const navigate = useNavigate();
     const { id } = useParams();
     const isEdit = !!id;
@@ -17,7 +17,7 @@ const AddPetugas = () => {
         noHp: '',
         alamat: '',
         komplek: '',
-        role: 'PETUGAS'
+        role: 'WARGA'
     });
 
     // --- LOGIKA FETCH DATA UNTUK AUTO-FILL ---
@@ -33,7 +33,7 @@ const AddPetugas = () => {
                     noHp: res.data.no_hp || res.data.noHp || '', 
                     alamat: res.data.alamat || '',
                     komplek: res.data.komplek || '',
-                    role: res.data.role || 'PETUGAS',
+                    role: res.data.role || 'WARGA',
                     password: ''
                 });
             })
@@ -76,11 +76,11 @@ const AddPetugas = () => {
             if (isEdit) {
                 // Gunakan PUT untuk update
                 await axios.put(`http://127.0.0.1:8080/api/users/${id}`, payload);
-                Swal.fire('Berhasil!', 'Data petugas diperbarui', 'success');
+                Swal.fire('Berhasil!', 'Data warga diperbarui', 'success');
             } else {
                 // Gunakan POST untuk tambah baru
                 await axios.post('http://127.0.0.1:8080/api/users', payload);
-                Swal.fire('Berhasil!', 'Petugas baru ditambahkan', 'success');
+                Swal.fire('Berhasil!', 'Warga baru ditambahkan', 'success');
             }
             navigate('/admin/pengguna');
         } catch (error) {
@@ -110,7 +110,7 @@ const AddPetugas = () => {
 
                 <div style={styles.formCard}>
                     <h2 style={{color: '#1b4332', marginBottom: '20px'}}>
-                        {isEdit ? 'Edit Data Petugas' : 'Tambah Petugas Baru'}
+                        {isEdit ? 'Edit Data Warga' : 'Tambah Warga Baru'}
                     </h2>
                     <form onSubmit={handleSubmit} style={styles.form}>
                         <div style={styles.row}>
@@ -133,13 +133,7 @@ const AddPetugas = () => {
                         <div style={styles.row}>
                             <div style={styles.field}>
                                 <label>No. HP</label>
-                                <input 
-                                    type="text" 
-                                    name="noHp" // Tambahkan ini
-                                    value={formData.noHp} 
-                                    onChange={e => setFormData({...formData, noHp: e.target.value})} 
-                                    style={styles.input} 
-                                />
+                                <input type="text" value={formData.noHp} onChange={e => setFormData({...formData, noHp: e.target.value})} style={styles.input} />
                             </div>
                         </div>
 
@@ -149,7 +143,7 @@ const AddPetugas = () => {
                         </div>
 
                         <button type="submit" style={styles.saveBtn}>
-                            {isEdit ? 'Simpan Perubahan' : 'Tambahkan Petugas'}
+                            {isEdit ? 'Simpan Perubahan' : 'Tambahkan Warga'}
                         </button>
                     </form>
                 </div>
@@ -175,4 +169,4 @@ const styles = {
     saveBtn: { backgroundColor: '#1b4332', color: '#fff', padding: '15px', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px', marginTop: '10px' }
 };
 
-export default AddPetugas;
+export default AddWarga;

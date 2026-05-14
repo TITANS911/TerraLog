@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Swal from 'sweetalert2'; // Pakai Swal biar konsisten sama Dashboard
-import { UserPlus } from 'lucide-react';
+import Swal from 'sweetalert2';
+import LogoRegister from '../../../assets/logoRegister.png'; // Menggunakan asset yang sama dengan Login
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -11,11 +11,11 @@ const Register = () => {
         nama: '',
         alamat: '',
         komplek: '',
-        noHp: '', // Disesuaikan dengan Java Model (noHp)
+        noHp: '', 
         role: 'WARGA' 
     });
     const [loading, setLoading] = useState(false);
-    const [isHovered, setIsHovered] = useState(false); // Untuk animasi tombol
+    const [isHovered, setIsHovered] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -28,34 +28,30 @@ const Register = () => {
     const handleRegister = async (e) => {
         e.preventDefault();
         setLoading(true);
-
         try {
-            // Pakai 127.0.0.1 biar lebih stabil nembak ke Spring Boot
             const response = await axios.post('http://127.0.0.1:8080/api/auth/register', formData);
-
             if (response.data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: 'Akun kamu sudah terdaftar, silakan login.',
-                    confirmButtonColor: '#1b4332'
+                Swal.fire({ 
+                    icon: 'success', 
+                    title: 'Berhasil!', 
+                    text: 'Akun kamu sudah terdaftar, silakan login.', 
+                    confirmButtonColor: '#1b4332' 
                 });
                 navigate('/login');
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal',
-                    text: response.data.message || "Registrasi Gagal!",
-                    confirmButtonColor: '#1b4332'
+                Swal.fire({ 
+                    icon: 'error', 
+                    title: 'Gagal', 
+                    text: response.data.message || "Registrasi Gagal!", 
+                    confirmButtonColor: '#1b4332' 
                 });
             }
         } catch (error) {
-            console.error("Error Register:", error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops!',
-                text: 'Gagal terhubung ke server! Pastikan Spring Boot jalan.',
-                confirmButtonColor: '#1b4332'
+            Swal.fire({ 
+                icon: 'error', 
+                title: 'Oops!', 
+                text: 'Gagal terhubung ke server!', 
+                confirmButtonColor: '#1b4332' 
             });
         } finally {
             setLoading(false);
@@ -63,132 +59,134 @@ const Register = () => {
     };
 
     return (
-        <div style={styles.container}>
-            <form onSubmit={handleRegister} style={styles.card}>
-                <div style={{ textAlign: 'center', marginBottom: '25px' }}>
-                    <div style={styles.iconCircle}>
-                        <UserPlus size={40} color="#1b4332" />
-                    </div>
-                    <h2 style={{ margin: '15px 0 5px 0', color: '#1b4332' }}>Daftar Terralog</h2>
-                    <p style={{ color: '#666', fontSize: '14px' }}>Gabung untuk lingkungan yang lebih bersih</p>
+        <div style={styles.pageWrapper}>
+            {/* KIRI (HIJAU) - Identik dengan Login */}
+            <div style={styles.leftSection}>
+                <div style={styles.welcomeText}>
+                    <h1 style={styles.mainTitle}>Start With <br /><span style={styles.highlight}>TerraLog</span></h1>
+                    <p style={styles.subTitle}>Daftar untuk mulai mengelola sampah anda.</p>
                 </div>
-
-                <div style={styles.grid}>
-                    <div style={styles.inputGroup}>
-                        <label style={styles.label}>Username</label>
-                        <input name="username" type="text" onChange={handleChange} style={styles.input} required />
+                <div style={styles.icon}>
+                    <div style={styles.iconLogin}>
+                        <div style={styles.logoLogin}>
+                            <img src={LogoRegister} alt="Register Illustration" style={{ width: '370px', height: '310px', objectFit: 'cover', borderRadius: '20px' }} />
+                        </div>
                     </div>
-                    <div style={styles.inputGroup}>
-                        <label style={styles.label}>Password</label>
-                        <input name="password" type="password" onChange={handleChange} style={styles.input} required />
-                    </div>
+                </div> 
+            </div>
 
-                    <div style={styles.inputGroup}>
-                        <label style={styles.label}>Nama Lengkap</label>
-                        <input name="nama" type="text" onChange={handleChange} style={styles.input} required />
-                    </div>
-                    <div style={styles.inputGroup}>
-                        <label style={styles.label}>No. HP</label>
-                        {/* Name disesuaikan jadi noHp agar sesuai state & Java */}
-                        <input name="noHp" type="text" onChange={handleChange} style={styles.input} placeholder="0812..." required />
-                    </div>
-                </div>
+            {/* KANAN (KUNING) - Form Register */}
+            <div style={styles.rightSection}>
+                <form onSubmit={handleRegister} style={styles.loginCard}>
+                    <h2 style={styles.formTitle}>Register</h2>
+                    <p style={styles.formSubTitle}>Enter your account details</p>
 
-                <div style={styles.inputGroup}>
-                    <label style={styles.label}>Alamat</label>
-                    <input name="alamat" type="text" onChange={handleChange} style={styles.input} required />
-                </div>
-                <div style={styles.inputGroup}>
-                    <label style={styles.label}>Komplek (Blok)</label>
-                    <input name="komplek" type="text" placeholder="Contoh: Blok A / No. 12" onChange={handleChange} style={styles.input} required />
-                </div>
+                    {/* Grid untuk field yang bisa disejajarkan */}
+                        <div style={styles.inputGroup}>
+                            <label style={styles.label}><span style={{color: 'red'}}>*</span>Fullname</label>
+                            <input name="nama" type="text" placeholder='Enter your full name' onChange={handleChange} style={styles.input} required />
+                        </div>
 
-                <button 
-                    type="submit" 
-                    disabled={loading} 
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
-                    style={{ 
-                        ...styles.button, 
-                        ...(isHovered ? styles.buttonHover : {}) 
-                    }}
-                >
-                    {loading ? 'Memproses...' : 'Daftar Sekarang'}
-                </button>
+                        <div style={styles.inputGroup}>
+                            <label style={styles.label}><span style={{color: 'red'}}>*</span>Telephone Number</label>
+                            <input name="noHp" type="text" placeholder="08.." onChange={handleChange} style={styles.input} required />
+                        </div>
 
-                <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '14px' }}>
-                    Sudah punya akun? <Link to="/login" style={{ color: '#2d6a4f', fontWeight: 'bold', textDecoration: 'none' }}>Login di sini</Link>
-                </p>
-            </form>
+                        <div style={styles.inputGroup}>
+                            <label style={styles.label}><span style={{color: 'red'}}>*</span>Address</label>
+                            <input name="alamat" type="text" placeholder='Enter your address' onChange={handleChange} style={styles.input} required />
+                        </div>                       
+
+                        <div style={styles.inputGroup}>
+                            <label style={styles.label}><span style={{color: 'red'}}>*</span>Username</label>
+                            <input name="username" type="text" placeholder='Enter your username' onChange={handleChange} style={styles.input} required />
+                        </div>
+
+                        <div style={styles.inputGroup}>
+                            <label style={styles.label}><span style={{color: 'red'}}>*</span>Password</label>
+                            <input name="password" type="password" placeholder='Enter your password' onChange={handleChange} style={styles.input} required />
+                        </div>
+
+                    <button 
+                        type="submit" 
+                        disabled={loading} 
+                        onMouseEnter={() => setIsHovered(true)}
+                        onMouseLeave={() => setIsHovered(false)}
+                        style={{ ...styles.button, ...(isHovered ? styles.buttonHover : {}) }}
+                    >
+                        {loading ? 'Processing...' : 'Register'}
+                    </button>
+
+                    <p style={styles.registerText}>
+                        Already have an account? <a href="/login" style={styles.registerLink}>Login</a>
+                    </p>
+                </form>
+            </div>
         </div>
     );
 };
 
+// Styles di bawah ini disalin persis dari komponen Login kamu
 const styles = {
-    container: { 
+    pageWrapper: { display: 'flex', height: '100vh', width: '100%', overflow: 'hidden' },
+    leftSection: {
+        flex: '0 0 45%',
+        backgroundColor: '#064e3b',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        padding: '0 50px',
+        color: '#fff',
+    },
+    mainTitle: { fontSize: '5vw', fontWeight: '450', margin: 0, lineHeight: '1.1', marginLeft: '50px', color: '#FACC15' , fontfamily: 'Poppins' },
+    highlight: { color: '#FACC15', fontWeight: '790', fontfamily: 'Poppins' },
+    subTitle: { fontSize: '1.1rem', marginTop: '15px', opacity: '0.9', marginLeft: '50px' },
+    
+    rightSection: {
+        flex: '0 0 55%', // Sedikit disesuaikan agar form register yang panjang muat
+        backgroundColor: '#fbbf24',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '50px'
+    },
+    loginCard: {
+        backgroundColor: '#fff',
+        width: '380px', 
+        // Sedikit lebih lebar dari login karena field lebih banyak
+        padding: '30px 40px 20px 40px',
+        borderRadius: '50px 50px 0 0',
+        boxShadow: '0 -5px 20px rgba(0,0,0,0.1)',
+        textAlign: 'left',
+        margin: 0,
+        marginTop: '40px',
+        marginLeft: '-200px',
+        borderBottom: 'none'    
+    },
+
+    formTitle: { fontSize: '45px', fontWeight: 'bold', color: '#064e3b', margin: '0', fontfamily: 'Poppins' },
+    formSubTitle: { color: '#999', marginBottom: '28px', fontSize: '15px', marginTop: '11px' },
+    inputGroup: { marginBottom: '10px' },
+    label: { display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '14px', color: '#064e3b' },
+    input: { width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #065f46', boxSizing: 'border-box' },
+    button: { width: '100%', padding: '14px', backgroundColor: '#064e3b', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', marginTop: '10px' },
+    buttonHover: { backgroundColor: '#065f46' },
+    divider: { display: 'flex', alignItems: 'center', margin: '20px 0' },
+    line: { flex: 1, height: '2px', backgroundColor: '#fcc419' },
+    dividerText: { margin: '0 20px', color: '#065f46', fontSize: '13px', fontWeight: 'bold' },
+    registerText: { textAlign: 'center', fontSize: '13px', marginTop: '10px' },
+    registerLink: { color: '#064e3b', fontWeight: 'bold', textDecoration: 'none' },
+    icon: { marginTop: '30px', display: 'flex', justifyContent: 'flex-start' },
+    iconLogin: { 
+        width: '150px', 
+        height: '280px', 
         display: 'flex', 
-        justifyContent: 'center', 
         alignItems: 'center', 
-        minHeight: '100vh', 
-        backgroundColor: '#f5f6f8', // Samain sama background dashboard
-        padding: '20px' 
+        justifyContent: 'center' ,
+        marginTop: '30px', 
+        marginLeft: '190px',
     },
-    card: { 
-        padding: '40px', 
-        borderRadius: '20px', 
-        backgroundColor: '#fff', 
-        boxShadow: '0 10px 30px rgba(0,0,0,0.08)', 
-        width: '100%', 
-        maxWidth: '550px',
-        border: '1px solid #eee'
-    },
-    iconCircle: { 
-        width: '80px', 
-        height: '80px', 
-        backgroundColor: '#e8f5e9', 
-        borderRadius: '50%', 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        margin: '0 auto' 
-    },
-    grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' },
-    inputGroup: { marginBottom: '18px' },
-    label: { 
-        display: 'block', 
-        marginBottom: '8px', 
-        fontWeight: '600', 
-        fontSize: '13px', 
-        color: '#1b4332' 
-    },
-    input: { 
-        width: '100%', 
-        padding: '12px', 
-        borderRadius: '10px', 
-        border: '1px solid #ddd', 
-        boxSizing: 'border-box',
-        outline: 'none',
-        transition: 'border 0.3s ease',
-        fontSize: '14px'
-    },
-    button: { 
-        width: '100%', 
-        padding: '14px', 
-        backgroundColor: '#1b4332', // Hijau Tua Dashboard
-        color: '#fff', 
-        border: 'none', 
-        borderRadius: '10px', 
-        cursor: 'pointer', 
-        fontSize: '16px', 
-        fontWeight: 'bold', 
-        marginTop: '15px',
-        transition: 'all 0.3s ease'
-    },
-    buttonHover: {
-        backgroundColor: '#2d6a4f', // Hijau Terang pas di hover
-        transform: 'translateY(-2px)',
-        boxShadow: '0 5px 15px rgba(27, 67, 50, 0.3)'
-    }
+    logoLogin: { fontSize: '200px' }
 };
 
 export default Register;

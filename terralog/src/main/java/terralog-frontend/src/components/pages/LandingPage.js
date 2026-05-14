@@ -5,6 +5,9 @@ import {
   MapPin, Send, TrendingUp, ChevronRight, FileText, Layers
 } from 'lucide-react';
 import bgKuning from '../../assets/Rectangle 35.png'; 
+import img1 from '../../assets/Rectangle 64.png';
+import img2 from '../../assets/Rectangle 65.png';
+import img3 from '../../assets/Rectangle 66.png';
 import backgroundImage from '../../assets/bg.jpeg';
 
 const LandingPage = () => {
@@ -106,7 +109,7 @@ const LandingPage = () => {
       <section id="tentang" style={styles.sectionAbout}>
         <div style={styles.aboutHeader}>
           <h2 style={styles.aboutTitle}>
-            <span style={{ color: '#E7B416' }}>Tentang</span>{' '}
+            <span style={{ color: '#FACC15' }}>Tentang</span>{' '}
             <span style={{ color: '#0B5D3F' }}>TerraLog</span>
           </h2>
           <div style={styles.greenLine}></div>
@@ -127,13 +130,13 @@ const LandingPage = () => {
 
           <div style={styles.imageGroup}>
             <div style={styles.smallImage}>
-              <img src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=500" alt="" style={styles.fullImg} />
+              <img src={img1} alt="" style={styles.fullImg} />
             </div>
             <div style={styles.bigImage}>
-              <img src="https://images.unsplash.com/photo-1511497584788-876760111969?w=500" alt="" style={styles.fullImg} />
+              <img src={img2} alt="" style={styles.fullImg} />
             </div>
             <div style={styles.smallImage}>
-              <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=500" alt="" style={styles.fullImg} />
+              <img src={img3} alt="" style={styles.fullImg} />
             </div>
           </div>
         </div>
@@ -441,8 +444,9 @@ heroSubtitle: {
     width: '100%',
   },
   aboutTitle: {
+    fontFamily: 'Poppins',
     fontSize: '48px',
-    fontWeight: '800',
+    fontWeight: '700',
     margin: 0,
     lineHeight: '1',
   },
@@ -474,21 +478,21 @@ heroSubtitle: {
   imageGroup: {
     display: 'flex',
     alignItems: 'center',
-    gap: '15px',
+    gap: '9px',
     flexShrink: 0,
   },
-  smallImage: { width: '120px', height: '260px', borderRadius: '24px', overflow: 'hidden' },
+  smallImage: { width: '150px', height: '260px', borderRadius: '24px', overflow: 'hidden' },
   bigImage: { width: '150px', height: '380px', borderRadius: '28px', overflow: 'hidden' },
   fullImg: { width: '100%', height: '100%', objectFit: 'cover' },
 
   sectionWhite: { padding: '80px 10%', backgroundColor: '#fff' },
-  sectionTitle: { fontSize: '32px', fontWeight: 'bold', marginBottom: '10px' },
+  sectionTitle: { fontSize: '32px', fontWeight: '600', marginBottom: '10px', color: '#164D0C' },
   sectionSubtitle: { color: '#666', marginBottom: '40px' },
   p: { color: '#666', lineHeight: '1.7', marginBottom: '15px', fontSize: '15px' },
   
   featureGrid: { display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '25px' },
   fCard: { 
-    backgroundColor: 'rgba(223, 237, 221, 0.6)', 
+    backgroundColor: '#E8F3E8', 
     padding: '40px 25px', 
     borderRadius: '20px', 
     width: '240px', 
