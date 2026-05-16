@@ -4,6 +4,7 @@ import {
   Trash2, Users, Calendar, BarChart3, Map, MessageSquare, 
   MapPin, Send, TrendingUp, ChevronRight, FileText, Layers
 } from 'lucide-react';
+import Navbar from '../Navbar';
 import bgKuning from '../../assets/Rectangle 35.png'; 
 import img1 from '../../assets/Rectangle 64.png';
 import img2 from '../../assets/Rectangle 65.png';
@@ -21,76 +22,7 @@ const LandingPage = () => {
   });
   return (
     <div style={styles.wrapper}>
-        <div style={styles.topNavbar}>
-            <div style={styles.navInfoGroup}>
-                 <div style={styles.topNavContact}>
-                    <span style={styles.navInfoItem}><Clock size={14} color="#FFD700" /> 24/7 Customer Service</span>
-                    <span style={styles.navInfoItem}><Mail size={14} color="#FFD700" /> terralog.idn@gmail.com</span>
-                    <span style={styles.navInfoItem}><Phone size={14} color="#FFD700" /> (+62) 895 3279 16134</span>
-                </div>
-            </div>
-           
-
-            {/* Sisi Kanan: Area Kuning Melengkung */}
-            <div style={styles.yellowBranding}>
-              <div style={styles.socialGroup}>
-                <Facebook size={16} color='white' />
-              <Twitter size={16} color='white' />
-              <Instagram size={16} color='white' />
-              </div>
-              
-            </div>
-        </div>
-
-      {/* --- 2. NAVBAR --- */}
-      <nav style={styles.navbar}>
-        <div style={styles.logo}>TERRALOG</div>
-        <div style={styles.navLinks}>
-          {[
-              { name: 'HOME', hash: '#home' },
-              { name: 'TENTANG', hash: '#tentang' },
-              { name: 'FITUR', hash: '#fitur' },
-              { name: 'LAPORAN', hash: '#laporan' },
-              { name: 'KATEGORI', hash: '/kategori' },
-              { name: 'KONTAK', hash: '#kontak' },
-            ].map((item) => (
-              <a
-                key={item.hash}
-                href={item.hash}
-                style={getLinkStyle(item.hash)}
-                onClick={(e) => {
-                  e.preventDefault(); // Mencegah lompatan instan browser
-
-                  if (item.hash === '/kategori') {
-                    window.location.href = '/kategori'; // Navigasi ke halaman kategori
-                    return;
-                  }
-                  
-                  setActiveNav(item.hash);
-                
-                  // Mencari elemen target berdasarkan ID (menghapus tanda #)
-                  const targetId = item.hash.substring(1);
-                  const element = document.getElementById(targetId);
-                
-                  if (element) {
-                    element.scrollIntoView({
-                      behavior: 'smooth',
-                      block: 'start',
-                    });
-                  }
-                }}
-                onMouseEnter={() => setHoverNav(item.hash)}
-                onMouseLeave={() => setHoverNav(null)}
-              >
-                {item.name}
-              </a>
-            ))}
-        </div>
-        <div style={styles.navAuth}>
-          <a href="/login"><button style={styles.btnMasuk}>Masuk</button></a>
-          <a href="/register"><button style={styles.btnDaftar}>Daftar</button></a>
-        </div>
-      </nav>
+      <Navbar activePage="home" />
 
       {/* --- 3. HERO SECTION --- */}
       <header id="home" style={{

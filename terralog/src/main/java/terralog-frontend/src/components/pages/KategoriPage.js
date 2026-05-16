@@ -8,6 +8,8 @@ import {
   Instagram
 } from 'lucide-react';
 
+import Navbar from '../Navbar';
+
 import bgKuning from '../../assets/Rectangle 35.png';
 import logoTerraLog from '../../assets/logo-terralog.png';
 import heroKategori from '../../assets/kategori/hero-kategori.png';
@@ -125,64 +127,7 @@ const KategoriPage = () => {
 
   return (
     <div style={styles.wrapper}>
-      <div style={styles.topNavbar}>
-        <div style={styles.navInfoGroup}>
-          <div style={styles.topNavContact}>
-            <span style={styles.navInfoItem}>
-              <Clock size={14} color="#FFD700" />
-              24/7 Customer Service
-            </span>
-
-            <span style={styles.navInfoItem}>
-              <Mail size={14} color="#FFD700" />
-              terralog.idn@gmail.com
-            </span>
-
-            <span style={styles.navInfoItem}>
-              <Phone size={14} color="#FFD700" />
-              (+62) 895 3279 16134
-            </span>
-          </div>
-        </div>
-
-        <div style={styles.yellowBranding}>
-          <div style={styles.socialGroup}>
-            <Facebook size={16} color="white" />
-            <Twitter size={16} color="white" />
-            <Instagram size={16} color="white" />
-          </div>
-        </div>
-      </div>
-
-      <nav style={styles.navbar}>
-        <a href="/" style={styles.logoLink}>
-          <img src={logoTerraLog} alt="TerraLog" style={styles.logoImage} />
-        </a>
-
-        <div style={styles.navLinks}>
-          {navItems.map((item) => (
-            <a
-              key={item.hash}
-              href={item.hash}
-              style={getLinkStyle(item.hash)}
-              onMouseEnter={() => setHoverNav(item.hash)}
-              onMouseLeave={() => setHoverNav(null)}
-            >
-              {item.name}
-            </a>
-          ))}
-        </div>
-
-        <div style={styles.navAuth}>
-          <a href="/login">
-            <button style={styles.btnMasuk}>Masuk</button>
-          </a>
-
-          <a href="/register">
-            <button style={styles.btnDaftar}>Daftar</button>
-          </a>
-        </div>
-      </nav>
+      <Navbar activePage="kategori" />
 
       <section style={styles.heroKategori}>
         <img src={heroKategori} alt="Kategori sampah" style={styles.heroImage} />
