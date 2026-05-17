@@ -9,7 +9,6 @@ import com.terralog.service.userService;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = "*")
 public class userController {
 
     @Autowired

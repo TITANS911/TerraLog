@@ -29,6 +29,11 @@ import SampahManagement from './components/pages/Dashboard/Admin/SampahManagemen
 import TransaksiManagement from './components/pages/Dashboard/Admin/TransaksiManagement';
 import LaporanStatistik from './components/pages/Dashboard/Admin/LaporanStatistik';
 import PengaduanManagement from './components/pages/Dashboard/Admin/PengaduanManagement';
+import BuangSampah from './components/pages/Dashboard/Warga/BuangSampah';
+import JadwalPenjemputan from './components/pages/Dashboard/Warga/JadwalPenjemputan';
+import LaporanWarga from './components/pages/Dashboard/Warga/LaporanWarga';
+import RiwayatSetoran from './components/pages/Dashboard/Warga/RiwayatSetoran';
+
 
 function App() {
   return (
@@ -47,16 +52,24 @@ function App() {
         <Route path="/admin/transaksi" element={<TransaksiManagement />} />
         <Route path="/admin/laporan" element={<LaporanStatistik />} />
         <Route path="/admin/pengaduan" element={<PengaduanManagement />} />
+
+        
         {/* --- PETUGAS ROUTES --- */}
         <Route path="/petugas/dashboard" element={<PetugasDashboard />} />
         <Route path="/admin/tambah-petugas" element={<AddPetugas />} />
         <Route path="/admin/edit-petugas/:id" element={<EditPetugas />} />
+
+
         {/* --- WARGA ROUTES --- */}
         <Route path="/dashboard" element={<WargaDashboard />} />
         <Route path="/admin/tambah-warga" element={<AddWarga />} />
         <Route path="/admin/edit-warga/:id" element={<EditWarga />} />
         <Route path="/admin/tambah-kategori" element={<AddKategori />} />
         <Route path="/admin/edit-kategori/:id" element={<EditKategori />} />
+        <Route path="/buang-sampah" element={<BuangSampah />} />
+        <Route path="/jadwal-penjemputan" element={<JadwalPenjemputan />} />
+        <Route path="/laporan-warga" element={<LaporanWarga />} />
+        <Route path="/riwayat-setoran" element={<RiwayatSetoran />} />
       </Routes>
     </Router>
   );

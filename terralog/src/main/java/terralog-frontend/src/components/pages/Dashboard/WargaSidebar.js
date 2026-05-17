@@ -48,7 +48,7 @@ const WargaSidebar = ({ activeMenu = 'dashboard' }) => {
       id: 'laporan',
       icon: <BarChart3 size={26} />,
       label: 'Laporan',
-      path: '/laporan'
+      path: '/laporan-warga'
     },
     {
       id: 'pengaduan',

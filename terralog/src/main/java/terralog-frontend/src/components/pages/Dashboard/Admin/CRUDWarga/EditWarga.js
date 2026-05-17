@@ -15,7 +15,6 @@ const EditWarga = () => {
         password: '', 
         noHp: '',
         alamat: '',
-        komplek: '',
         role: 'PETUGAS'
     });
 
@@ -34,7 +33,6 @@ const EditWarga = () => {
                 // Gunakan pencocokan fleksibel jika Java mengirim snake_case
                 noHp: data.noHp || data.no_hp || '', 
                 alamat: data.alamat || '',
-                komplek: data.komplek || '',
                 role: data.role || 'PETUGAS',
                 password: '' 
             });
@@ -119,10 +117,6 @@ const EditWarga = () => {
                             <div style={styles.field}>
                                 <label>No. HP</label>
                                 <input type="text" value={formData.noHp} onChange={e => setFormData({...formData, noHp: e.target.value})} style={styles.input} />
-                            </div>
-                            <div style={styles.field}>
-                                <label>Komplek / Blok</label>
-                                <input type="text" value={formData.komplek} onChange={e => setFormData({...formData, komplek: e.target.value})} style={styles.input} />
                             </div>
                         </div>
 

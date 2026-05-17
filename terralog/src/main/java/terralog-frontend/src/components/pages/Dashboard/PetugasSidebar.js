@@ -50,12 +50,6 @@ const PetugasSidebar = ({ activeMenu = 'dashboard' }) => {
       label: 'Laporan',
       path: '/petugas/laporan'
     },
-    {
-      id: 'pengaduan',
-      icon: <Megaphone size={26} />,
-      label: 'Pengaduan',
-      path: '/petugas/pengaduan'
-    }
   ];
 
   const handleLogout = () => {

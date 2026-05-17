@@ -15,7 +15,8 @@ import {
 
 import AdminSidebar from '../AdminSidebar';
 
-const API_URL = 'http://127.0.0.1:8080/api/kategori';
+// Ubah URL ini jika endpoint asli backend untuk list sampah warga berbeda
+const API_URL = 'http://127.0.0.1:8080/api/waste'; 
 
 const SampahManagement = () => {
   const navigate = useNavigate();
@@ -28,12 +29,14 @@ const SampahManagement = () => {
 
   const itemsPerPage = 5;
 
+  // Fungsi fetch data dari backend
   const fetchKategori = async () => {
     setLoading(true);
     setErrorMessage('');
 
     try {
       const response = await axios.get(API_URL);
+      // Memastikan data yang masuk adalah Array sesuai respons dari backend
       setKategori(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Gagal mengambil data sampah:', error);
@@ -57,21 +60,32 @@ const SampahManagement = () => {
     fetchKategori();
   }, []);
 
+  // --- HELPER MEMETAKAN KATEGORI & BERAT SECARA DINAMIS DARI BACKEND ---
+  const dapatkanKategoriDanBerat = (item) => {
+    if (item.organik !== null && item.organik !== undefined) return { kategori: 'Organik', berat: `${item.organik} Kg` };
+    if (item.anorganik !== null && item.anorganik !== undefined) return { kategori: 'Anorganik', berat: `${item.anorganik} Kg` };
+    if (item.campuran !== null && item.campuran !== undefined) return { kategori: 'Campuran', berat: `${item.campuran} Kg` };
+    if (item.b3 !== null && item.b3 !== undefined) return { kategori: 'B3', berat: `${item.b3} Kg` };
+    return { kategori: '-', berat: '-' };
+  };
+
+  // --- LOGIKA FILTER PENCARIAN BERDASARKAN NAMA SAMPAH / DESKRIPSI ---
   const filteredKategori = useMemo(() => {
     return kategori.filter((item) => {
       const keyword = searchTerm.toLowerCase();
+      const info = dapatkanKategoriDanBerat(item);
 
       return (
-        item.namaKategori?.toLowerCase().includes(keyword) ||
-        item.jenisSampah?.toLowerCase?.().includes(keyword) ||
-        item.deskripsi?.toLowerCase?.().includes(keyword) ||
-        item.satuan?.toLowerCase?.().includes(keyword)
+        info.kategori.toLowerCase().includes(keyword) ||
+        item.namaSampah?.toLowerCase().includes(keyword) ||
+        item.deskripsi?.toLowerCase().includes(keyword)
       );
     });
   }, [kategori, searchTerm]);
 
   const totalPages = Math.ceil(filteredKategori.length / itemsPerPage) || 1;
 
+  // --- LOGIKA PAGINATION ---
   const paginatedKategori = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     return filteredKategori.slice(startIndex, startIndex + itemsPerPage);
@@ -81,10 +95,11 @@ const SampahManagement = () => {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  const handleDelete = (idKategori, namaKategori) => {
+  // --- LOGIKA DELETE MENGGUNAKAN wasteId ---
+  const handleDelete = (wasteId, namaSampah) => {
     Swal.fire({
       title: 'Hapus Data Sampah?',
-      text: `Yakin ingin menghapus kategori "${namaKategori}"?`,
+      text: `Yakin ingin menghapus data sampah "${namaSampah}"?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#064D36',
@@ -94,7 +109,7 @@ const SampahManagement = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`${API_URL}/${idKategori}`);
+          await axios.delete(`${API_URL}/${wasteId}`);
 
           Swal.fire({
             icon: 'success',
@@ -128,7 +143,7 @@ const SampahManagement = () => {
             </div>
 
             <div style={styles.headerRight}>
-              <div style={styles.datePill}>12 Mei 2026</div>
+              <div style={styles.datePill}>17 Mei 2026</div>
 
               <button style={styles.circleButton}>
                 <Bell size={22} color="#111" />
@@ -145,7 +160,7 @@ const SampahManagement = () => {
               <Search size={18} color="#7D8490" />
               <input
                 type="text"
-                placeholder="Cari berdasarkan nama warga..."
+                placeholder="Cari berdasarkan jenis/kategori..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={styles.searchInput}
@@ -155,7 +170,7 @@ const SampahManagement = () => {
             <div style={styles.totalText}>
               <span>Total:</span>
               <strong>{filteredKategori.length}</strong>
-              <span>Kategori</span>
+              <span>Data Sampah</span>
             </div>
           </section>
 
@@ -202,34 +217,49 @@ const SampahManagement = () => {
                     </td>
                   </tr>
                 ) : (
-                  paginatedKategori.map((item, index) => (
-                    <tr key={item.idKategori} style={styles.tr}>
-                      <td style={styles.td}>
-                        {(currentPage - 1) * itemsPerPage + index + 1}
-                      </td>
-                      <td style={styles.td}>{item.namaKategori || '-'}</td>
-                      <td style={styles.td}>{item.jenisSampah || '-'}</td>
-                      <td style={styles.td}>{item.deskripsi || '-'}</td>
-                      <td style={styles.td}>{item.satuan || '-'}</td>
-                      <td style={styles.td}>
-                        <div style={styles.actionGroup}>
-                          <button
-                            style={styles.editButton}
-                            onClick={() => navigate(`/admin/edit-kategori/${item.idKategori}`)}
-                          >
-                            <Edit size={22} />
-                          </button>
+                  paginatedKategori.map((item, index) => {
+                    const infoSampah = dapatkanKategoriDanBerat(item);
+                    
+                    return (
+                      <tr key={item.wasteId} style={styles.tr}>
+                        <td style={styles.td}>
+                          {(currentPage - 1) * itemsPerPage + index + 1}
+                        </td>
+                        <td style={styles.td}>
+                          <span style={{
+                            padding: '4px 10px',
+                            borderRadius: '12px',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            backgroundColor: infoSampah.kategori === 'B3' ? '#FFD2D2' : '#D2EBD4',
+                            color: infoSampah.kategori === 'B3' ? '#D61C1C' : '#064D36'
+                          }}>
+                            {infoSampah.kategori}
+                          </span>
+                        </td>
+                        <td style={styles.td}>{item.namaSampah || '-'}</td>
+                        <td style={styles.td}>{item.deskripsi || '-'}</td>
+                        <td style={styles.td}>{infoSampah.berat}</td>
+                        <td style={styles.td}>
+                          <div style={styles.actionGroup}>
+                            <button
+                              style={styles.editButton}
+                              onClick={() => navigate(`/admin/edit-kategori/${item.wasteId}`)}
+                            >
+                              <Edit size={22} />
+                            </button>
 
-                          <button
-                            style={styles.deleteButton}
-                            onClick={() => handleDelete(item.idKategori, item.namaKategori)}
-                          >
-                            <Trash2 size={22} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                            <button
+                              style={styles.deleteButton}
+                              onClick={() => handleDelete(item.wasteId, item.namaSampah)}
+                            >
+                              <Trash2 size={22} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -237,7 +267,7 @@ const SampahManagement = () => {
 
           <section style={styles.footerRow}>
             <p style={styles.showingText}>
-              Menampilkan <strong>{startNumber} - {endNumber}</strong> dari {filteredKategori.length} kategori
+              Menampilkan <strong>{startNumber} - {endNumber}</strong> dari {filteredKategori.length} data sampah
             </p>
 
             <div style={styles.pagination}>
@@ -295,20 +325,19 @@ const SampahManagement = () => {
   );
 };
 
+// --- GAYA CSS INTERNAL JANGAN DIUBAH ---
 const styles = {
   container: {
     minHeight: '100vh',
     backgroundColor: '#064D36',
     fontFamily: "'Poppins', sans-serif"
   },
-
   main: {
     marginLeft: '270px',
     minHeight: '100vh',
     padding: '24px 24px 24px 0',
     boxSizing: 'border-box'
   },
-
   contentWrapper: {
     minHeight: 'calc(100vh - 48px)',
     backgroundColor: '#fff',
@@ -316,7 +345,6 @@ const styles = {
     padding: '38px 48px 42px 48px',
     boxSizing: 'border-box'
   },
-
   header: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -324,7 +352,6 @@ const styles = {
     gap: '24px',
     marginBottom: '42px'
   },
-
   pageTitle: {
     margin: '0 0 8px 0',
     fontSize: '40px',
@@ -332,19 +359,16 @@ const styles = {
     fontWeight: '900',
     color: '#111'
   },
-
   subtitle: {
     margin: 0,
     fontSize: '18px',
     color: '#8A8A8A'
   },
-
   headerRight: {
     display: 'flex',
     alignItems: 'center',
     gap: '14px'
   },
-
   datePill: {
     width: '520px',
     height: '52px',
@@ -358,7 +382,6 @@ const styles = {
     fontSize: '16px',
     fontWeight: '600'
   },
-
   circleButton: {
     width: '44px',
     height: '44px',
@@ -371,7 +394,6 @@ const styles = {
     justifyContent: 'center',
     cursor: 'pointer'
   },
-
   searchSection: {
     minHeight: '76px',
     borderRadius: '28px',
@@ -384,7 +406,6 @@ const styles = {
     boxSizing: 'border-box',
     marginBottom: '16px'
   },
-
   searchBox: {
     width: '360px',
     height: '42px',
@@ -397,7 +418,6 @@ const styles = {
     padding: '0 14px',
     boxSizing: 'border-box'
   },
-
   searchInput: {
     border: 'none',
     outline: 'none',
@@ -406,7 +426,6 @@ const styles = {
     color: '#6E7480',
     fontFamily: "'Poppins', sans-serif"
   },
-
   totalText: {
     display: 'flex',
     alignItems: 'center',
@@ -414,13 +433,11 @@ const styles = {
     color: '#7B8494',
     fontSize: '14px'
   },
-
   actionRow: {
     display: 'flex',
     justifyContent: 'flex-end',
     marginBottom: '16px'
   },
-
   addButton: {
     width: '270px',
     height: '46px',
@@ -437,20 +454,17 @@ const styles = {
     gap: '12px',
     fontFamily: "'Poppins', sans-serif"
   },
-
   tableCard: {
     borderRadius: '25px',
     overflow: 'hidden',
     border: '1px solid #CDD8D5',
     backgroundColor: '#F7FBFA'
   },
-
   table: {
     width: '100%',
     borderCollapse: 'collapse',
     tableLayout: 'fixed'
   },
-
   th: {
     height: '62px',
     backgroundColor: '#064D36',
@@ -460,12 +474,10 @@ const styles = {
     textAlign: 'center',
     borderRight: '1px solid rgba(255,255,255,0.15)'
   },
-
   tr: {
     height: '66px',
     borderBottom: '1px solid #C7D1CF'
   },
-
   td: {
     textAlign: 'center',
     fontSize: '14px',
@@ -476,7 +488,6 @@ const styles = {
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap'
   },
-
   emptyCell: {
     height: '330px',
     textAlign: 'center',
@@ -484,14 +495,12 @@ const styles = {
     fontSize: '15px',
     backgroundColor: '#F7FBFA'
   },
-
   actionGroup: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     gap: '12px'
   },
-
   editButton: {
     width: '50px',
     height: '44px',
@@ -504,7 +513,6 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center'
   },
-
   deleteButton: {
     width: '50px',
     height: '44px',
@@ -517,26 +525,22 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center'
   },
-
   footerRow: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: '20px'
   },
-
   showingText: {
     margin: 0,
     color: '#7B8494',
     fontSize: '14px'
   },
-
   pagination: {
     display: 'flex',
     alignItems: 'center',
     gap: '9px'
   },
-
   pageButton: {
     minWidth: '34px',
     height: '34px',
@@ -547,12 +551,10 @@ const styles = {
     cursor: 'pointer',
     fontWeight: '700'
   },
-
   activePageButton: {
     backgroundColor: '#064D36',
     color: '#fff'
   },
-
   pageArrow: {
     width: '34px',
     height: '34px',
@@ -565,7 +567,6 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center'
   },
-
   pageDots: {
     color: '#7B8494',
     fontWeight: '700'

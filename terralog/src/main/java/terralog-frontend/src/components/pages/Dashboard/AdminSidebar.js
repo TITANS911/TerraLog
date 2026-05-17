@@ -41,7 +41,7 @@ const AdminSidebar = ({ activeMenu = 'dashboard' }) => {
     {
       id: 'sampah',
       icon: <Trash2 size={24} />,
-      label: 'Data Sampah',
+      label: 'Data Kategori Sampah',
       path: '/admin/sampah'
     },
     {
@@ -56,13 +56,6 @@ const AdminSidebar = ({ activeMenu = 'dashboard' }) => {
       label: 'Laporan & Statistik',
       path: '/admin/laporan'
     },
-    {
-      id: 'pengaduan',
-      icon: <Megaphone size={24} />,
-      label: 'Pengaduan',
-      path: '/admin/pengaduan',
-      badge: 1
-    }
   ];
 
   const handleLogout = () => {

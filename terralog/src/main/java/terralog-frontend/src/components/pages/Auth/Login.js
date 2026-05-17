@@ -13,27 +13,55 @@ const Login = () => {
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            const response = await axios.post('http://127.0.0.1:8080/api/auth/login', {
-                username: username, password: password
-            });
-            if (response.data.success === true) {
-                const role = response.data.role ? response.data.role.toString().trim().toUpperCase() : "";
-                localStorage.setItem('nama', response.data.nama);
-                localStorage.setItem('user_role', role);
-                if (role === 'ADMIN') navigate('/admin/dashboard');
-                else if (role === 'PETUGAS') navigate('/petugas/dashboard');
-                else navigate('/dashboard');
-            } else {
-                Swal.fire({ icon: 'error', title: 'Login Gagal', text: response.data.message || "Salah!", confirmButtonColor: '#1b4332' });
-            }
-        } catch (error) {
-            Swal.fire({ icon: 'error', title: 'Koneksi Error', text: 'Gagal ke server!', confirmButtonColor: '#1b4332' });
-        } finally { setLoading(false); }
-    };
+    e.preventDefault();
+    setLoading(true);
+    try {
+        // Menggunakan localhost agar lebih stabil dibanding IP loopback mentah
+        const response = await axios.post('http://localhost:8080/api/auth/login', {
+            username: username, 
+            password: password
+        });
 
+        if (response.data.success === true) {
+            const role = response.data.role ? response.data.role.toString().trim().toUpperCase() : "";
+            
+            // --- BERIKUT PERBAIKANNYA (SINKRONISASI SESI) ---
+            localStorage.setItem('nama', response.data.nama);
+            localStorage.setItem('user_role', role);
+            
+            // Simpan userId ke localStorage agar dikenali oleh komponen BuangSampah.js
+            // CATATAN: sesuaikan .userId atau .id dengan output JSON login dari backend kamu
+            const idUser = response.data.userId || response.data.id;
+            if (idUser) {
+                localStorage.setItem('userId', idUser.toString());
+            } else {
+                console.warn("Peringatan: Backend tidak mengirimkan userId / id!");
+            }
+            // ------------------------------------------------
+
+            if (role === 'ADMIN') navigate('/admin/dashboard');
+            else if (role === 'PETUGAS') navigate('/petugas/dashboard');
+            else navigate('/dashboard');
+        } else {
+            Swal.fire({ 
+                icon: 'error', 
+                title: 'Login Gagal', 
+                text: response.data.message || "Username atau password salah!", 
+                confirmButtonColor: '#1b4332' 
+            });
+        }
+    } catch (error) {
+        console.error("Detail error login:", error);
+        Swal.fire({ 
+            icon: 'error', 
+            title: 'Koneksi Error', 
+            text: 'Gagal terhubung ke server backend!', 
+            confirmButtonColor: '#1b4332' 
+        });
+    } finally { 
+        setLoading(false); 
+    }
+};
     return (
         <div style={styles.pageWrapper}>
             {/* KIRI (HIJAU) - Dibuat agak lebih kecil (40%) */}

@@ -16,7 +16,6 @@ const AddWarga = () => {
         password: '',
         noHp: '',
         alamat: '',
-        komplek: '',
         role: 'WARGA'
     });
 
@@ -32,7 +31,6 @@ const AddWarga = () => {
                     username: res.data.username || '',
                     noHp: res.data.no_hp || res.data.noHp || '', 
                     alamat: res.data.alamat || '',
-                    komplek: res.data.komplek || '',
                     role: res.data.role || 'WARGA',
                     password: ''
                 });
@@ -64,7 +62,6 @@ const AddWarga = () => {
         username: formData.username,
         noHp: formData.noHp, // UBAH dari no_hp menjadi noHp
         alamat: formData.alamat,
-        komplek: formData.komplek,
         role: formData.role
     };
 
