@@ -4,8 +4,6 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
-# Ignore frontend folder (deploy separately)
-terralog-frontend/
 node_modules/
 uploads/
 
