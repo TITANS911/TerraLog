@@ -6,24 +6,24 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 import javax.sql.DataSource;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 @Configuration
 @Profile("prod")
 public class RailwayDatabaseConfig {
 
     @Bean
-    public DataSource dataSource() throws URISyntaxException {
-        String databaseUrl = System.getenv("DATABASE_URL");
-        if (databaseUrl == null) {
-            throw new IllegalStateException("DATABASE_URL environment variable not set");
+    public DataSource dataSource() {
+        String host = System.getenv("MYSQLHOST");
+        String port = System.getenv("MYSQLPORT");
+        String database = System.getenv("MYSQLDATABASE");
+        String username = System.getenv("MYSQLUSER");
+        String password = System.getenv("MYSQLPASSWORD");
+
+        if (host == null || port == null || database == null || username == null || password == null) {
+            throw new IllegalStateException("Railway MySQL environment variables not set");
         }
 
-        URI uri = new URI(databaseUrl.replace("mysql://", "jdbc:mysql://"));
-        String username = uri.getUserInfo().split(":")[0];
-        String password = uri.getUserInfo().split(":")[1];
-        String jdbcUrl = "jdbc:mysql://" + uri.getHost() + ":" + uri.getPort() + uri.getPath();
+        String jdbcUrl = "jdbc:mysql://" + host + ":" + port + "/" + database;
 
         return DataSourceBuilder.create()
                 .url(jdbcUrl)
