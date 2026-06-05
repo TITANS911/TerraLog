@@ -44,12 +44,8 @@ import BuangSampah from './components/pages/Dashboard/Warga/BuangSampah';
 import JadwalPenjemputan from './components/pages/Dashboard/Warga/JadwalPenjemputan';
 import LaporanWarga from './components/pages/Dashboard/Warga/LaporanWarga';
 import ProfilWarga from './components/pages/Dashboard/Warga/ProfilWarga';
-import AddSampah from './components/pages/Dashboard/Warga/CRUD Sampah/AddSampah';
-import EditSampah from './components/pages/Dashboard/Warga/CRUD Sampah/EditSampah';
-
-
-
-// IMPORT CRUD MANAGEMENT (Gunakan UserManagement)
+import AddSampah from './components/pages/Dashboard/Warga/CRUD-Sampah/AddSampah';
+import EditSampah from './components/pages/Dashboard/Warga/CRUD-Sampah/EditSampah';
 
 
 function App() {
