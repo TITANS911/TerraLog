@@ -9,7 +9,7 @@ import javax.sql.DataSource;
 import java.util.Map;
 
 @Configuration
-@Profile("prod")
+@Profile("nonexistentprofile") // Disable this config for now
 public class RailwayDatabaseConfig {
 
     @Bean
