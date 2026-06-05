@@ -1,0 +1,5 @@
+target/
+terralog-frontend/
+.git/
+.gitignore
+*.md
