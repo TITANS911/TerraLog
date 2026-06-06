@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import axios from 'axios';
 import Swal from 'sweetalert2';
+import { apiService } from '../../../../services/apiService';
 import { useNavigate } from 'react-router-dom';
 import {
   Search,
@@ -14,9 +14,6 @@ import {
 } from 'lucide-react';
 
 import AdminSidebar from '../AdminSidebar';
-
-// Ubah URL ini jika endpoint asli backend untuk list sampah warga berbeda
-const API_URL = 'http://127.0.0.1:8080/api/kategori'; 
 
 const SampahManagement = () => {
   const navigate = useNavigate();
@@ -36,7 +33,7 @@ const SampahManagement = () => {
     setErrorMessage('');
 
     try {
-      const response = await axios.get(API_URL);
+      const response = await apiService.getKategori();
       // Memastikan data yang masuk adalah Array sesuai respons dari backend
       setKategori(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
@@ -109,7 +106,7 @@ const filteredKategori = useMemo(() => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`${API_URL}/${kategoriId}`);
+          await apiService.deleteKategori(kategoriId);
 
           Swal.fire({
             icon: 'success',

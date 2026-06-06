@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import axios from 'axios';
 import Swal from 'sweetalert2';
+import { apiService } from '../../../../services/apiService';
 import { useNavigate } from 'react-router-dom';
 import {
   Search,
@@ -14,8 +14,6 @@ import {
 } from 'lucide-react';
 
 import AdminSidebar from '../AdminSidebar';
-
-const API_URL = 'http://127.0.0.1:8080/api/users';
 
 const UserManagement = () => {
   const navigate = useNavigate();
@@ -34,7 +32,7 @@ const UserManagement = () => {
     setErrorMessage('');
 
     try {
-      const response = await axios.get(API_URL);
+      const response = await apiService.getUsers();
       setUsers(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Gagal mengambil data warga:', error);
@@ -88,7 +86,7 @@ const UserManagement = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`${API_URL}/${userId}`);
+          await apiService.deleteUser(userId);
 
           Swal.fire({
             icon: 'success',
