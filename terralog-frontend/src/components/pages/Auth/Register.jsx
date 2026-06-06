@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import Swal from 'sweetalert2';
+import { apiService } from '../../../services/apiService';
 import LogoRegister from '../../../assets/logoRegister.png'; // Menggunakan asset yang sama dengan Login
 
 const Register = () => {
@@ -29,7 +29,7 @@ const Register = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await axios.post('http://127.0.0.1:8080/api/auth/register', formData);
+            const response = await apiService.register(formData);
             if (response.data.success) {
                 Swal.fire({ 
                     icon: 'success', 
@@ -47,10 +47,12 @@ const Register = () => {
                 });
             }
         } catch (error) {
+            console.error("Detail error register:", error);
+            const errorMessage = error.response?.data?.message || error.message || 'Gagal terhubung ke server backend!';
             Swal.fire({ 
                 icon: 'error', 
                 title: 'Oops!', 
-                text: 'Gagal terhubung ke server!', 
+                text: errorMessage, 
                 confirmButtonColor: '#1b4332' 
             });
         } finally {
