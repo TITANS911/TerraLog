@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Phone, MapPin, Mail, UserCircle } from 'lucide-react';
 import WargaSidebar from '../WargaSidebar';
+import { apiService } from '../../../services/apiService';
 
 const ProfilWarga = () => {
   const navigate = useNavigate();
@@ -30,7 +30,7 @@ const ProfilWarga = () => {
       
       try {
         setFetchLoading(true);
-        const res = await axios.get(`http://127.0.0.1:8080/api/users/${userId}`);
+        const res = await apiService.getUserById(userId);
         const data = res.data;
         
         setFormData({
@@ -70,7 +70,7 @@ const ProfilWarga = () => {
       console.log("Updating profile with payload:", payload);
       console.log("User ID:", userId);
 
-      const response = await axios.put(`http://127.0.0.1:8080/api/users/${userId}`, payload);
+      const response = await apiService.updateUser(userId, payload);
       console.log("Server response:", response.data);
 
       // Update localStorage juga
@@ -167,7 +167,7 @@ const ProfilWarga = () => {
 
                   <div style={styles.formGroup}>
                     <label style={styles.label}>Email</label>
-                    <input type="email" name="email" value={formData.email} onChange={handleChange} style={styles.inputField}/>
+                    <input type="email" name="email" value={formData.email} onChange={handleChange} style={styles.inputField} />
                   </div>
                 </div>
 
@@ -186,7 +186,6 @@ const ProfilWarga = () => {
                   </label>
                   <textarea name="alamat" value={formData.alamat} onChange={handleChange} style={{...styles.inputField, height: '100px', resize: 'none'}} placeholder="Masukkan alamat lengkap Anda" />
                 </div>
-
 
 
                 <div style={styles.buttonGroup}>
@@ -344,11 +343,7 @@ const styles = {
     outline: 'none',
     width: '100%',
     boxSizing: 'border-box',
-    transition: '0.2s ease',
-    '&:focus': {
-      borderColor: '#064D36',
-      boxShadow: '0 0 0 3px rgba(6, 77, 54, 0.1)'
-    }
+    transition: '0.2s ease'
   },
 
   buttonGroup: {
@@ -370,10 +365,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    transition: '0.2s ease',
-    '&:hover': {
-      backgroundColor: '#e0e0e0'
-    }
+    transition: '0.2s ease'
   },
 
   submitButton: {
@@ -387,9 +379,6 @@ const styles = {
     fontWeight: '700',
     cursor: 'pointer',
     transition: '0.2s ease',
-    '&:hover': {
-      backgroundColor: '#086b49'
-    },
     '&:disabled': {
       backgroundColor: '#888',
       cursor: 'not-allowed'

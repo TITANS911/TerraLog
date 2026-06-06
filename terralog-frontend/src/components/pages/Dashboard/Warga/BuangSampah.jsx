@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -12,6 +11,7 @@ import {
 } from 'lucide-react';
 
 import WargaSidebar from '../WargaSidebar';
+import { apiService } from '../../../services/apiService';
 
 const BuangSampah = () => {
   const navigate = useNavigate();
@@ -41,8 +41,8 @@ const BuangSampah = () => {
     try {
       // Fetch both categories and waste data
       const [categoriesRes, wasteRes] = await Promise.all([
-        axios.get('http://127.0.0.1:8080/api/kategori'),
-        axios.get(`http://localhost:8080/api/waste/user/${currentUserId}`)
+        apiService.getKategori(),
+        apiService.get(`/waste/user/${currentUserId}`)
       ]);
       
       setCategories(Array.isArray(categoriesRes.data) ? categoriesRes.data : []);
@@ -117,7 +117,7 @@ const BuangSampah = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`http://localhost:8080/api/waste/${id}`);
+          await apiService.delete(`/waste/${id}`);
 
           Swal.fire({
             icon: 'success',
@@ -161,7 +161,7 @@ const BuangSampah = () => {
             </div>
           </section>
 
-          <section style={styles.searchSection}>
+          <section style={styles.filterSection}>
             <div style={styles.searchBox}>
               <Search size={18} color="#7D8490" />
               <input
@@ -179,7 +179,7 @@ const BuangSampah = () => {
               <span>Setoran Terdaftar</span>
             </div>
           </section>
-          <br></br>
+          <br />
 
           <section style={styles.tableCard}>
             <table style={styles.table}>
@@ -399,7 +399,7 @@ const styles = {
     fontWeight: '600'
   },
 
-  searchSection: {
+  filterSection: {
     minHeight: '76px',
     borderRadius: '28px',
     backgroundColor: '#F3F8F6',
@@ -407,7 +407,8 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '0 42px 0 22px',
+    gap: '24px',
+    padding: '12px 24px',
     boxSizing: 'border-box',
     marginBottom: '16px'
   },
@@ -438,7 +439,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '7px',
-    color: '#7B8494',
+    color: '#7B8490',
     fontSize: '14px'
   },
 
@@ -568,7 +569,7 @@ const styles = {
 
   showingText: {
     margin: 0,
-    color: '#7B8494',
+    color: '#7B8490',
     fontSize: '14px'
   },
 
@@ -600,7 +601,7 @@ const styles = {
     borderRadius: '9px',
     border: '1px solid #DCE5E3',
     backgroundColor: '#fff',
-    color: '#7B8494',
+    color: '#7B8490',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
@@ -608,7 +609,7 @@ const styles = {
   },
 
   pageDots: {
-    color: '#7B8494',
+    color: '#7B8490',
     fontWeight: '700'
   }
 };

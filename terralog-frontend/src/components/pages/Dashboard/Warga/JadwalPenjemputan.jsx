@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import axios from 'axios'; 
 import WargaSidebar from '../WargaSidebar'; 
 import { Search, Home, ShoppingBag } from 'lucide-react';
+import { apiService } from '../../../services/apiService';
 
 
 // 1. Mengubah format string tanggal (YYYY-MM-DD) menjadi nama Hari
@@ -50,7 +50,7 @@ const JadwalPenjemputan = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('http://127.0.0.1:8080/api/jadwal');
+        const response = await apiService.getJadwal();
         setJadwalList(response.data);
       } catch (err) {
         console.error('Gagal mengambil data:', err);
@@ -144,7 +144,7 @@ const stats = useMemo(() => {
                   <p style={{ color: '#888', padding: '20px' }}>Tidak ada jadwal penjemputan hari ini.</p>
                 )}
               </div>
-            </div>
+              </div>
 
               <div style={styles.infoCardDark}>
                 <div>
@@ -234,7 +234,6 @@ const stats = useMemo(() => {
                                 backgroundColor: badgeStyle.color,
                                 color: badgeStyle.textColor
                               }}>
-          
                                 {item.keterangan}
                               </span>
                             ) : (
@@ -269,7 +268,7 @@ const stats = useMemo(() => {
 const styles = {
   container: { display: 'flex', backgroundColor: '#064D36', minHeight: '100vh', fontFamily: "'Poppins', sans-serif" },
   mainContent: { marginLeft: '270px', flex: 1, padding: '25px', display: 'flex' },
-  whiteCanvas: { backgroundColor: '#FFFFFF', flex: 1, borderRadius: '32px', padding: '40px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' },
+  whiteCanvas: { backgroundColor: '#FFFFFF', flex: 1, borderRadius: '38px', padding: '40px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column' },
   header: {
     display: 'flex',
     justifyContent: 'space-between',

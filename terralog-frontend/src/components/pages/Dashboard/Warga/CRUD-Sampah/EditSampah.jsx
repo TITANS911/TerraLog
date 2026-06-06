@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, User, Phone, MapPin } from 'lucide-react';
 import WargaSidebar from '../../WargaSidebar';
+import { apiService } from '../../../../services/apiService';
 
 const EditSampah = () => {
   const navigate = useNavigate();
@@ -52,8 +52,8 @@ const EditSampah = () => {
       setLoading(true);
       try {
         const [catRes, wasteRes] = await Promise.all([
-          axios.get('http://127.0.0.1:8080/api/kategori'),
-          axios.get(`http://127.0.0.1:8080/api/waste/${id}`)
+          apiService.getKategori(),
+          apiService.get(`/waste/${id}`)
         ]);
 
         console.log("Categories data:", catRes.data);
@@ -119,10 +119,10 @@ const EditSampah = () => {
 
     try {
       console.log("Sending PUT request with payload:", payload);
-      const response = await axios.put(`http://127.0.0.1:8080/api/waste/${id}`, payload);
+      const response = await apiService.put(`/waste/${id}`, payload);
       console.log("Response from server:", response.data);
 
-      if (response.status === 200) {
+      if (response.status === 200 || response.status === 201) {
         Swal.fire({
           title: 'Berhasil!',
           text: 'Data sampah telah diperbarui',

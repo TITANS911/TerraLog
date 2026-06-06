@@ -13,13 +13,11 @@ import {
   ArcElement, 
   Legend 
 } from 'chart.js';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import {
-  ChevronDown
-} from 'lucide-react';
-
+import { ChevronDown } from 'lucide-react';
 import WargaSidebar from '../WargaSidebar';
+import { apiService } from '../../../services/apiService';
+
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler);
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -101,7 +99,7 @@ const LaporanWarga = () => {
       
       try {
         setLoading(true);
-        const res = await axios.get(`http://127.0.0.1:8080/api/waste/user/${currentUserId}`);
+        const res = await apiService.get(`/waste/user/${currentUserId}`);
         const data = Array.isArray(res.data) ? res.data : [];
         
         setAllWaste(data);
@@ -119,7 +117,7 @@ const LaporanWarga = () => {
   useEffect(() => {
     const fetchKategori = async () => {
       try {
-        const res = await axios.get('http://127.0.0.1:8080/api/kategori');
+        const res = await apiService.getKategori();
         setKategoriList(res.data || []);
       } catch (error) {
         console.error("Gagal ambil kategori:", error);
@@ -236,70 +234,70 @@ const LaporanWarga = () => {
               </h3>
             </div>
             <div style={{ height: '280px', width: '100%' }}>
-                <Line data={data} options={options} />
+              <Line data={data} options={options} />
             </div>
           </section>
 
           <section style={styles.statistikCard}>
-              <div style={styles.cardHeader}>
-                <h3 style={styles.cardTitle}>Statistik Sampah</h3>
-              </div>
+            <div style={styles.cardHeader}>
+              <h3 style={styles.cardTitle}>Statistik Sampah</h3>
+            </div>
 
-              <div style={styles.donutContent}>
-                <div style={styles.donutChart}>
-                  {/* ChartJS Doughnut */}
-                  <Doughnut 
-                    data={donutChartData}
-                    options={{ 
-                      responsive: true, 
-                      plugins: { legend: { display: false } } 
-                    }} 
-                  />
+            <div style={styles.donutContent}>
+              <div style={styles.donutChart}>
+                {/* ChartJS Doughnut */}
+                <Doughnut 
+                  data={donutChartData}
+                  options={{ 
+                    responsive: true, 
+                    plugins: { legend: { display: false } } 
+                  }} 
+                />
 
-                  {/* Teks Total di tengah */}
-                  <div style={styles.donutCenter}>
-                    <strong style={{ fontSize: '12px', color: '#666' }}>Total</strong>
-                    <span style={{ fontSize: '16px', fontWeight: 'bold' }}>{totalSampahFull.toLocaleString()} kg</span>
-                  </div>
+                {/* Teks Total di tengah */}
+                <div style={styles.donutCenter}>
+                  <strong style={{ fontSize: '12px', color: '#666' }}>Total</strong>
+                  <span style={{ fontSize: '16px', fontWeight: 'bold' }}>{totalSampahFull.toLocaleString()} kg</span>
                 </div>
-                  
-                <div style={styles.legendList}> 
-                  {wasteStats.map((item, index) => (
-                      <div 
-                        key={index} 
-                        style={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'space-between',
-                          padding: '8px 0',
-                          borderBottom: '1px solid #f0f0f0'
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                          {/* Indikator Warna (Bullet) */}
-                          <span style={{ 
-                            width: '12px', 
-                            height: '12px', 
-                            backgroundColor: donutChartData.datasets[0].backgroundColor[index] || '#ccc', 
-                            borderRadius: '50%', 
-                            marginRight: '10px' 
-                          }}></span>
-                          
-                          {/* Teks Kategori */}
-                          <span style={{ fontWeight: '600', color: '#333', fontSize: '14px' }}>
-                            {item.label}
-                          </span>
-                        </div>
-                        
-                        {/* Persentase */}
-                        <span style={{ fontWeight: '700', color: '#064D36', fontSize: '14px' }}>
-                          {item.percentage}%
-                        </span>
-                      </div>
-                    ))}
-                  </div>
               </div>
-            </section>
+                
+              <div style={styles.legendList}> 
+                {wasteStats.map((item, index) => (
+                  <div 
+                    key={index} 
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'space-between',
+                      padding: '8px 0',
+                      borderBottom: '1px solid #f0f0f0'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      {/* Indikator Warna (Bullet) */}
+                      <span style={{ 
+                        width: '12px', 
+                        height: '12px', 
+                        backgroundColor: donutChartData.datasets[0].backgroundColor[index] || '#ccc', 
+                        borderRadius: '50%', 
+                        marginRight: '10px' 
+                      }}></span>
+                      
+                      {/* Teks Kategori */}
+                      <span style={{ fontWeight: '600', color: '#333', fontSize: '14px' }}>
+                        {item.label}
+                      </span>
+                    </div>
+                    
+                    {/* Persentase */}
+                    <span style={{ fontWeight: '700', color: '#064D36', fontSize: '14px' }}>
+                      {item.percentage}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
         </div>
       </main>
     </div>
@@ -459,7 +457,7 @@ const styles = {
   },
 
   filterLabel: {
-    color: '#7B8494',
+    color: '#7B8490',
     fontSize: '12px'
   },
 

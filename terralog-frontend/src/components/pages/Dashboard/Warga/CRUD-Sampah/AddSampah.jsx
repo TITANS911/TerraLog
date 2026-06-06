@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, Phone, MapPin } from 'lucide-react';
 import WargaSidebar from '../../WargaSidebar';
+import { apiService } from '../../../../services/apiService';
 
 const AddSampah = () => {
   const navigate = useNavigate();
@@ -52,7 +52,7 @@ const AddSampah = () => {
     const fetchKategori = async () => {
       if (!isProfileComplete) return;
       try {
-        const res = await axios.get('http://127.0.0.1:8080/api/kategori');
+        const res = await apiService.getKategori();
         console.log("Data Kategori dari Backend:", res.data);
         setCategories(res.data);
       } catch (err) {
@@ -93,9 +93,9 @@ const AddSampah = () => {
 
     try {
       // 3. Pastikan endpoint di backend sudah sesuai menerima struktur ini
-      await axios.post('http://127.0.0.1:8080/api/waste', payload);
+      await apiService.post('/waste', payload);
       
-      Swal.fire({ title: 'Sukses!', text: 'Laporan berhasil dibuat', icon: 'success', timer: 1500 });
+      Swal.fire({ title: 'Berhasil!', text: 'Laporan berhasil dibuat', icon: 'success', timer: 1500 });
       navigate('/buang-sampah');
     } catch (error) {
       console.error("Detail Error:", error.response?.data);
