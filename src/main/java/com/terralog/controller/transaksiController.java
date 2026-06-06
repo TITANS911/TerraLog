@@ -17,8 +17,7 @@ import java.nio.file.Path;
 
 
 @RestController
-@RequestMapping("/api/transaksi")
-@CrossOrigin(origins = "*") 
+@RequestMapping("/api/transaksi") 
 public class transaksiController {
 
     @Autowired

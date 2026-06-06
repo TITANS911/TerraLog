@@ -9,7 +9,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/waste")
-@CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*")
 public class sampahController {
 
     @Autowired

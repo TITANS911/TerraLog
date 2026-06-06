@@ -12,7 +12,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/jadwal")
-@CrossOrigin(origins = "*")
 public class jadwalController {
 
     @Autowired
