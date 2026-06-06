@@ -49,25 +49,60 @@ apiClient.interceptors.response.use(
 
 // API service functions
 export const apiService = {
-  // Auth endpoints
-  login: (username, password) => {
-    return apiClient.post('/auth/login', { username, password });
-  },
-  
-  googleLogin: (credential) => {
-    return apiClient.post('/auth/google-login', { credential });
-  },
-  
-  register: (data) => {
-    return apiClient.post('/auth/register', data);
-  },
-  
-  // Add more endpoints as needed
-  get: (url, config) => apiClient.get(url, config),
-  post: (url, data, config) => apiClient.post(url, data, config),
-  put: (url, data, config) => apiClient.put(url, data, config),
-  delete: (url, config) => apiClient.delete(url, config),
-  patch: (url, data, config) => apiClient.patch(url, data, config),
+    // Auth endpoints
+    login: (username, password) => {
+        return apiClient.post('/auth/login', { username, password });
+    },
+    
+    googleLogin: (credential) => {
+        return apiClient.post('/auth/google-login', { credential });
+    },
+    
+    register: (data) => {
+        return apiClient.post('/auth/register', data);
+    },
+    
+    // User endpoints
+    getUsers: () => apiClient.get('/users'),
+    getUserById: (id) => apiClient.get(`/users/${id}`),
+    createUser: (data) => apiClient.post('/users', data),
+    updateUser: (id, data) => apiClient.put(`/users/${id}`, data),
+    deleteUser: (id) => apiClient.delete(`/users/${id}`),
+    
+    // Sampah endpoints
+    getSampah: () => apiClient.get('/sampah'),
+    getSampahById: (id) => apiClient.get(`/sampah/${id}`),
+    createSampah: (data) => apiClient.post('/sampah', data),
+    updateSampah: (id, data) => apiClient.put(`/sampah/${id}`, data),
+    deleteSampah: (id) => apiClient.delete(`/sampah/${id}`),
+    
+    // Kategori endpoints
+    getKategori: () => apiClient.get('/kategori'),
+    getKategoriById: (id) => apiClient.get(`/kategori/${id}`),
+    createKategori: (data) => apiClient.post('/kategori', data),
+    updateKategori: (id, data) => apiClient.put(`/kategori/${id}`, data),
+    deleteKategori: (id) => apiClient.delete(`/kategori/${id}`),
+    
+    // Transaksi endpoints
+    getTransaksi: () => apiClient.get('/transaksi'),
+    getTransaksiById: (id) => apiClient.get(`/transaksi/${id}`),
+    createTransaksi: (data) => apiClient.post('/transaksi', data),
+    updateTransaksi: (id, data) => apiClient.put(`/transaksi/${id}`, data),
+    deleteTransaksi: (id) => apiClient.delete(`/transaksi/${id}`),
+    
+    // Jadwal endpoints
+    getJadwal: () => apiClient.get('/jadwal'),
+    getJadwalById: (id) => apiClient.get(`/jadwal/${id}`),
+    createJadwal: (data) => apiClient.post('/jadwal', data),
+    updateJadwal: (id, data) => apiClient.put(`/jadwal/${id}`, data),
+    deleteJadwal: (id) => apiClient.delete(`/jadwal/${id}`),
+    
+    // Generic methods for custom endpoints
+    get: (url, config) => apiClient.get(url, config),
+    post: (url, data, config) => apiClient.post(url, data, config),
+    put: (url, data, config) => apiClient.put(url, data, config),
+    delete: (url, config) => apiClient.delete(url, config),
+    patch: (url, data, config) => apiClient.patch(url, data, config),
 };
 
 export default apiClient;

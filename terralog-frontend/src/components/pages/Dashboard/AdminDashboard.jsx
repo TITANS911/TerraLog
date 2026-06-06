@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import Swal from "sweetalert2";
-import axios from "axios";
+import { apiService } from "../../../services/apiService";
 import {
   Search,
   Bell,
@@ -41,14 +41,13 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const now = new Date();
   const userName = localStorage.getItem("nama") || "Admin";
-  const [allWaste, setAllWaste] = useState([]); // Data full untuk Donut
+  const [allWaste, setAllWaste] = useState([]);
   const [filteredWaste, setFilteredWaste] = useState([]);
 
   useEffect(() => {
     console.log("=== ADMIN DASHBOARD ALERT ===");
     console.log("userName:", userName);
 
-    // Clear untuk testing (bisa dihapus nanti)
     sessionStorage.removeItem("admin-dashboard-toast");
 
     const alreadyShown = sessionStorage.getItem("admin-dashboard-toast");
@@ -82,25 +81,21 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/users");
-        const allUsers = await response.json();
+        const [usersRes, transaksiRes, sampahRes] = await Promise.all([
+          apiService.getUsers(),
+          apiService.getTransaksi(),
+          apiService.getSampah(),
+        ]);
 
-        const transaksiResponse = await fetch(
-          "http://localhost:8080/api/transaksi",
-        );
-        const allTransaksi = await transaksiResponse.json();
+        const allUsers = usersRes.data;
+        const allTransaksi = transaksiRes.data;
+        const allWasteData = sampahRes.data;
 
-        const wasteResponse = await fetch("http://localhost:8080/api/waste");
-        const allWaste = await wasteResponse.json();
-
-        // 1. Filter hanya status "SELESAI"
-        const wasteSelesai = allWaste.filter(
+        const wasteSelesai = allWasteData.filter(
           (item) => item.status === "SELESAI",
         );
 
-        // 2. Penjumlahan Dinamis dengan Ignore List yang Lengkap
         const totalBerat = wasteSelesai.reduce((total, item) => {
-          // Daftar semua kolom yang BUKAN kategori sampah (PASTIKAN SEMUA ADA DI SINI)
           const ignoreFields = [
             "wasteId",
             "userId",
@@ -108,7 +103,7 @@ const AdminDashboard = () => {
             "tanggalInput",
             "deskripsi",
             "namaSampah",
-            "waste_id", // jaga-jaga kalau formatnya pakai underscore
+            "waste_id",
             "user_id",
             "tanggal_input",
             "idKategori",
@@ -117,10 +112,8 @@ const AdminDashboard = () => {
           let beratPerBaris = 0;
 
           Object.keys(item).forEach((key) => {
-            // Jika key tidak ada di daftar ignore dan nilainya bukan null
             if (!ignoreFields.includes(key) && item[key] !== null) {
               const nilai = parseFloat(item[key]);
-              // Pastikan hasilnya angka dan bukan NaN
               if (!isNaN(nilai)) {
                 beratPerBaris += nilai;
               }
@@ -130,11 +123,9 @@ const AdminDashboard = () => {
           return total + beratPerBaris;
         }, 0);
 
-        // Filter user yang role-nya "WARGA"
         const warga = allUsers.filter((user) => user.role === "WARGA");
         const petugas = allUsers.filter((user) => user.role === "PETUGAS");
 
-        // Update state
         setTotalWarga(warga.length);
         setTotalPetugas(petugas.length);
         setTotalTransaksi(allTransaksi.length);
@@ -150,17 +141,14 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchJadwal = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:8080/api/jadwal");
+        const response = await apiService.getJadwal();
 
         const today = new Date().toLocaleDateString("en-CA");
 
-        // Filter di sini agar state yang disimpan sudah bersih
         const filtered = response.data.filter((item) => {
-          // Jika API kirim tanggal dalam format array [YYYY, M, D]
-          // Anda perlu ubah dulu jadi string:
           const tglItem = Array.isArray(item.tanggalTugas)
             ? `${item.tanggalTugas[0]}-${String(item.tanggalTugas[1]).padStart(2, "0")}-${String(item.tanggalTugas[2]).padStart(2, "0")}`
-            : item.tanggalTugas; // Jika sudah string YYYY-MM-DD
+            : item.tanggalTugas;
 
           return tglItem === today;
         });
@@ -177,12 +165,11 @@ const AdminDashboard = () => {
   }, []);
 
   const filteredData = useMemo(() => {
-    const today = new Date().toLocaleDateString("en-CA"); // "2026-05-27"
+    const today = new Date().toLocaleDateString("en-CA");
 
     return pickupData.filter((item) => {
       let tglItem = item.tanggalTugas;
 
-      // Jika data adalah array [2026, 5, 27]
       if (Array.isArray(tglItem)) {
         const year = tglItem[0];
         const month = String(tglItem[1]).padStart(2, "0");
@@ -203,7 +190,7 @@ const AdminDashboard = () => {
   const statsData = [
     {
       title: "Total Warga",
-      value: String(totalWarga ?? 0), // Aman dari undefined!
+      value: String(totalWarga ?? 0),
       unit: "orang",
       icon: <Users size={26} />,
       iconBg: "#38B46A",
@@ -211,7 +198,7 @@ const AdminDashboard = () => {
     },
     {
       title: "Total Petugas",
-      value: String(totalPetugas ?? 0), // Aman dari undefined!
+      value: String(totalPetugas ?? 0),
       unit: "orang",
       icon: <UserCog size={26} />,
       iconBg: "#5B9CF6",
@@ -219,7 +206,7 @@ const AdminDashboard = () => {
     },
     {
       title: "Total Transaksi",
-      value: String(totalTransaksi ?? 0), // Aman dari undefined!
+      value: String(totalTransaksi ?? 0),
       unit: "transaksi",
       icon: <FileText size={26} />,
       iconBg: "#FF9F43",
@@ -227,7 +214,7 @@ const AdminDashboard = () => {
     },
     {
       title: "Total Sampah",
-      value: String(totalSampah ?? 0), // Aman dari undefined!
+      value: String(totalSampah ?? 0),
       unit: "kg",
       icon: <Trash2 size={26} />,
       iconBg: "#9B7FE8",
@@ -259,21 +246,15 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchDataFull = async () => {
       try {
-        const [wasteRes, transaksiRes, usersRes] = await Promise.all([
-          axios.get("http://127.0.0.1:8080/api/waste"),
-          axios.get("http://127.0.0.1:8080/api/transaksi"),
-          axios.get("http://127.0.0.1:8080/api/users"),
-        ]);
-
+        const [wasteRes] = await Promise.all([apiService.getSampah()]);
         setAllWaste(wasteRes.data || []);
-        // ... setStats logic here ...
       } catch (error) {
         console.error("Gagal ambil data Full:", error);
       }
     };
     fetchDataFull();
   }, []);
-  // 1. Logika untuk menghitung statistik berdasarkan kategori dari DATA FULL (allWaste)
+
   const wasteStats = useMemo(() => {
     const dataSelesai = allWaste.filter((item) => item.status === "SELESAI");
     const totalKeseluruhan = dataSelesai.reduce(
@@ -290,21 +271,19 @@ const AdminDashboard = () => {
     return Object.keys(map).map((label) => ({
       label: label,
       value: map[label],
-      // Hitung persentase di sini
       percentage:
         totalKeseluruhan > 0
           ? ((map[label] / totalKeseluruhan) * 100).toFixed(1)
           : 0,
     }));
   }, [allWaste]);
-  // 1. Hitung total sampah dari DATA FULL (allWaste), bukan dari data terfilter
+
   const totalSampahFull = useMemo(() => {
     return allWaste
       .filter((item) => item.status === "SELESAI")
       .reduce((sum, item) => sum + (parseFloat(item.berat) || 0), 0);
   }, [allWaste]);
 
-  // 2. Format data khusus untuk komponen Doughnut Chart
   const donutChartData = useMemo(
     () => ({
       labels: wasteStats.map((item) => item.label),
@@ -317,9 +296,9 @@ const AdminDashboard = () => {
             "#3B82F6",
             "#EF4444",
             "#10B981",
-          ], // Tambahkan warna sesuai kebutuhan
+          ],
           borderWidth: 0,
-          cutout: "75%", // Memberikan efek donut
+          cutout: "75%",
         },
       ],
     }),
@@ -376,7 +355,6 @@ const AdminDashboard = () => {
             <div style={styles.cardLarge}>
               <div style={styles.cardHeaderPickup}>
                 <h3 style={styles.cardTitle}>Lokasi Pengambilan Hari Ini</h3>
-                {/* Menggunakan filteredData.length agar badge otomatis sesuai jumlah data */}
                 <span style={styles.locationBadge}>
                   {filteredData.length} lokasi
                 </span>
@@ -401,7 +379,6 @@ const AdminDashboard = () => {
             </div>
             <div style={styles.donutContent}>
               <div style={styles.donutChart}>
-                {/* ChartJS Doughnut */}
                 <Doughnut
                   data={donutChartData}
                   options={{
@@ -409,7 +386,6 @@ const AdminDashboard = () => {
                     plugins: { legend: { display: false } },
                   }}
                 />
-                {/* Teks Total di tengah */}
                 <div style={styles.donutCenter}>
                   <strong style={{ fontSize: "12px", color: "#666" }}>
                     Total
@@ -429,11 +405,10 @@ const AdminDashboard = () => {
                       alignItems: "center",
                       justifyContent: "space-between",
                       padding: "8px 0",
-                      borderBottom: "1px solid #f0f0f0", // Garis tipis pemisah
+                      borderBottom: "1px solid #f0f0f0",
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center" }}>
-                      {/* Indikator Warna (Bullet) */}
                       <span
                         style={{
                           width: "12px",
@@ -445,8 +420,6 @@ const AdminDashboard = () => {
                           marginRight: "10px",
                         }}
                       ></span>
-
-                      {/* Teks Kategori */}
                       <span
                         style={{
                           fontWeight: "600",
@@ -457,8 +430,6 @@ const AdminDashboard = () => {
                         {item.label}
                       </span>
                     </div>
-
-                    {/* Persentase */}
                     <span
                       style={{
                         fontWeight: "700",
@@ -510,16 +481,14 @@ const PickupItem = ({ item }) => (
     </div>
 
     <div style={styles.pickupText}>
-      {/* Menggunakan lokasiTugas dari JSON Anda */}
       <strong>{item.lokasiTugas}</strong>
-      {/* Menampilkan shift sebagai info tambahan */}
       <span>Shift: {item.shift}</span>
     </div>
 
     <span
       style={{
         ...styles.statusBadge,
-        backgroundColor: item.color || "#e0e0e0", // Fallback jika warna belum ada
+        backgroundColor: item.color || "#e0e0e0",
         color: item.textColor || "#000",
       }}
     >
@@ -565,14 +534,12 @@ const styles = {
     backgroundColor: "#064D36",
     fontFamily: "'Poppins', sans-serif",
   },
-
   main: {
     marginLeft: "270px",
     minHeight: "100vh",
     padding: "24px 24px 24px 0",
     boxSizing: "border-box",
   },
-
   contentWrapper: {
     minHeight: "calc(100vh - 48px)",
     backgroundColor: "#fff",
@@ -580,7 +547,6 @@ const styles = {
     padding: "34px 40px 40px 40px",
     boxSizing: "border-box",
   },
-
   topSection: {
     display: "flex",
     alignItems: "flex-start",
@@ -588,7 +554,6 @@ const styles = {
     gap: "25px",
     marginBottom: "28px",
   },
-
   pageTitle: {
     fontSize: "38px",
     lineHeight: "1",
@@ -596,25 +561,21 @@ const styles = {
     color: "#111",
     fontWeight: "900",
   },
-
   greenText: {
     color: "#064D36",
   },
-
   subtitle: {
     margin: 0,
     fontSize: "17px",
     color: "#8A8A8A",
     fontWeight: "400",
   },
-
   topActions: {
     display: "flex",
     alignItems: "center",
     gap: "14px",
     flexWrap: "nowrap",
   },
-
   datePill: {
     width: "400px",
     height: "44px",
@@ -629,35 +590,12 @@ const styles = {
     fontWeight: "600",
     marginRight: "30px",
   },
-
-  searchInput: {
-    border: "none",
-    outline: "none",
-    width: "150px",
-    fontSize: "12px",
-    color: "#777",
-  },
-
-  circleButton: {
-    width: "42px",
-    height: "42px",
-    borderRadius: "50%",
-    border: "none",
-    backgroundColor: "#fff",
-    boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-  },
-
   statsGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(4, 1fr)",
     gap: "26px",
     marginBottom: "26px",
   },
-
   statCard: {
     minHeight: "126px",
     backgroundColor: "#fff",
@@ -670,7 +608,6 @@ const styles = {
     alignItems: "flex-start",
     gap: "16px",
   },
-
   statIcon: {
     width: "44px",
     height: "44px",
@@ -680,62 +617,34 @@ const styles = {
     justifyContent: "center",
     flexShrink: 0,
   },
-
   statTitle: {
     margin: "3px 0 8px 0",
     fontSize: "18px",
     color: "#111",
     fontWeight: "800",
   },
-
   statValueWrap: {
     display: "flex",
     alignItems: "flex-end",
     gap: "6px",
     marginBottom: "12px",
   },
-
   statValue: {
     fontSize: "40px",
     lineHeight: "0.85",
     fontWeight: "900",
   },
-
   statUnit: {
     fontSize: "15px",
     color: "#777",
     fontWeight: "600",
   },
-
-  statTrend: {
-    display: "flex",
-    alignItems: "center",
-    gap: "7px",
-    fontSize: "12px",
-  },
-
-  trendText: {
-    color: "#2DA86B",
-    fontWeight: "700",
-  },
-
-  trendSubtext: {
-    color: "#7D7D7D",
-  },
-
   middleGrid: {
     display: "grid",
     gridTemplateColumns: "1.15fr 1fr",
     gap: "24px",
     marginBottom: "26px",
   },
-
-  bottomGrid: {
-    display: "grid",
-    gridTemplateColumns: "1.15fr 1fr",
-    gap: "24px",
-  },
-
   cardLarge: {
     backgroundColor: "#fff",
     border: "1px solid #DDDDDD",
@@ -743,7 +652,6 @@ const styles = {
     boxShadow: "0 2px 0 rgba(0,0,0,0.25)",
     overflow: "hidden",
   },
-
   cardHeader: {
     height: "43px",
     borderBottom: "1px solid #DDDDDD",
@@ -751,7 +659,6 @@ const styles = {
     alignItems: "center",
     padding: "0 24px",
   },
-
   cardHeaderPickup: {
     height: "43px",
     borderBottom: "1px solid #DDDDDD",
@@ -760,14 +667,12 @@ const styles = {
     justifyContent: "space-between",
     padding: "0 22px 0 24px",
   },
-
   cardTitle: {
     margin: 0,
     fontSize: "15px",
     color: "#111",
     fontWeight: "800",
   },
-
   locationBadge: {
     minWidth: "110px",
     height: "26px",
@@ -780,67 +685,19 @@ const styles = {
     fontSize: "14px",
     fontWeight: "800",
   },
-
   mapBox: {
     padding: "8px 14px 14px 14px",
   },
-
   mapFake: {
     height: "305px",
     width: "100%",
     borderRadius: "4px",
-    overflow: "hidden", // Penting agar iframe tidak 'meluap'
+    overflow: "hidden",
     border: "1px solid #DCE4E7",
   },
-
-  mapLineHorizontal: {
-    position: "absolute",
-    top: "42%",
-    left: "-20px",
-    width: "120%",
-    height: "12px",
-    backgroundColor: "#D6E8EF",
-    transform: "rotate(-15deg)",
-  },
-
-  mapLineVertical: {
-    position: "absolute",
-    top: "-20px",
-    left: "50%",
-    width: "13px",
-    height: "120%",
-    backgroundColor: "#D6E8EF",
-    transform: "rotate(18deg)",
-  },
-
-  mapPin: {
-    position: "absolute",
-    top: "43%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-  },
-
-  zoomControl: {
-    position: "absolute",
-    right: "15px",
-    bottom: "15px",
-    display: "flex",
-    flexDirection: "column",
-  },
-
-  zoomButton: {
-    width: "30px",
-    height: "28px",
-    border: "1px solid #D2D2D2",
-    backgroundColor: "#fff",
-    fontSize: "18px",
-    cursor: "pointer",
-  },
-
   pickupList: {
     padding: "8px 12px 14px 12px",
   },
-
   pickupItem: {
     height: "58px",
     borderBottom: "1px solid #D9D9D9",
@@ -848,7 +705,6 @@ const styles = {
     alignItems: "center",
     gap: "14px",
   },
-
   pickupIcon: {
     width: "62px",
     height: "42px",
@@ -858,15 +714,11 @@ const styles = {
     justifyContent: "center",
     flexShrink: 0,
   },
-
   pickupText: {
     display: "flex",
     flexDirection: "column",
     flex: 1,
   },
-
-  pickupTextStrong: {},
-
   statusBadge: {
     minWidth: "110px",
     height: "32px",
@@ -877,7 +729,6 @@ const styles = {
     fontSize: "14px",
     fontWeight: "600",
   },
-
   chartContent: {
     minHeight: "240px",
     display: "grid",
@@ -886,7 +737,6 @@ const styles = {
     gap: "10px",
     padding: "24px 32px",
   },
-
   donutChart: {
     position: "relative",
     width: "180px",
@@ -896,7 +746,6 @@ const styles = {
     justifyContent: "center",
     margin: "0 auto",
   },
-
   donutCenter: {
     position: "absolute",
     textAlign: "center",
@@ -904,86 +753,11 @@ const styles = {
     flexDirection: "column",
     pointerEvents: "none",
   },
-
   legendList: {
     display: "flex",
     flexDirection: "column",
     gap: "18px",
   },
-
-  legendItem: {
-    display: "grid",
-    gridTemplateColumns: "16px 1fr auto",
-    gap: "16px",
-    alignItems: "center",
-    fontSize: "13px",
-  },
-
-  legendDot: {
-    width: "11px",
-    height: "11px",
-    borderRadius: "50%",
-  },
-
-  legendLabel: {
-    fontWeight: "700",
-  },
-
-  legendValue: {
-    fontWeight: "900",
-  },
-
-  complaintList: {
-    padding: "8px 12px 0 12px",
-  },
-
-  complaintItem: {
-    height: "58px",
-    borderBottom: "1px solid #D9D9D9",
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-  },
-
-  complaintIcon: {
-    width: "64px",
-    height: "42px",
-    borderRadius: "8px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-
-  complaintText: {
-    display: "flex",
-    flexDirection: "column",
-    flex: 1,
-  },
-
-  complaintBadge: {
-    minWidth: "110px",
-    height: "32px",
-    borderRadius: "8px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "14px",
-    fontWeight: "600",
-  },
-
-  seeAllComplaint: {
-    height: "60px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "6px",
-    color: "#064D36",
-    fontSize: "13px",
-    fontWeight: "800",
-    cursor: "pointer",
-  },
-
   statistikCard: {
     width: "610px",
     border: "1px solid #D5D5D5",
@@ -992,7 +766,6 @@ const styles = {
     backgroundColor: "#fff",
     boxShadow: "0 2px 0 rgba(0,0,0,0.2)",
   },
-
   donutContent: {
     minHeight: "240px",
     display: "grid",
