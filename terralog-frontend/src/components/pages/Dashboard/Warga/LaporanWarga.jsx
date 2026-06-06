@@ -16,7 +16,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import WargaSidebar from '../WargaSidebar';
-import { apiService } from '../../../services/apiService';
+import { apiService } from '../../../../services/apiService';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler);
 ChartJS.register(ArcElement, Tooltip, Legend);
