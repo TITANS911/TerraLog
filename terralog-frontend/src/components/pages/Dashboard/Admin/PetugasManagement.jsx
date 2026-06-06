@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import axios from 'axios';
 import Swal from 'sweetalert2';
+import { apiService } from '../../../../services/apiService';
 import { useNavigate } from 'react-router-dom';
 import {
   Search,
@@ -14,8 +14,6 @@ import {
 } from 'lucide-react';
 
 import AdminSidebar from '../AdminSidebar';
-
-const API_URL = 'http://127.0.0.1:8080/api/users';
 
 const PetugasManagement = () => {
   const navigate = useNavigate();
@@ -39,7 +37,7 @@ const PetugasManagement = () => {
     setErrorMessage('');
 
     try {
-      const response = await axios.get(API_URL);
+      const response = await apiService.getUsers();
       setUsers(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Gagal mengambil data petugas:', error);
@@ -65,7 +63,7 @@ const PetugasManagement = () => {
 
 // 3. Fungsi untuk mengambil data dari backend
 const fetchJadwal = () => {
-    axios.get('http://localhost:8080/api/jadwal')
+    apiService.getJadwal()
         .then(res => {
             console.log("Data Jadwal dari Backend:", res.data); // Untuk debug di console f12
             // Pastikan res.data berbentuk Array. Jika tidak, sesuaikan dengan struktur response backend-mu
@@ -79,7 +77,7 @@ const fetchJadwal = () => {
 
 useEffect(() => {
     // Ambil data dari api/waste untuk referensi nama warga & nama sampah
-    axios.get('http://localhost:8080/api/waste')
+    apiService.get('/waste')
         .then(res => {
             setListWaste(res.data || []);
         })
@@ -164,7 +162,7 @@ const filteredJadwal = useMemo(() => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`${API_URL}/${userId}`);
+          await apiService.deleteUser(userId);
 
           Swal.fire({
             icon: 'success',
@@ -201,7 +199,7 @@ const filteredJadwal = useMemo(() => {
     }).then((result) => {
         if (result.isConfirmed) {
             // Mengirim request DELETE ke endpoint Spring Boot berdasarkan idJadwal
-            axios.delete(`http://localhost:8080/api/jadwal/${idJadwal}`)
+            apiService.deleteJadwal(idJadwal)
                 .then(() => {
                     Swal.fire(
                         'Terhapus!',
