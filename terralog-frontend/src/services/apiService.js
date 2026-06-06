@@ -5,10 +5,14 @@ const getBaseURL = () => {
   // Log environment variables for debugging
   console.log('🔧 ENV MODE:', import.meta.env.MODE);
   console.log('🔧 VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
+  console.log('🔧 VITE_API_URL:', import.meta.env.VITE_API_URL);
   
-  // Priority: always use VITE_API_BASE_URL if available
+  // Priority: check both VITE_API_BASE_URL and VITE_API_URL
   if (import.meta.env.VITE_API_BASE_URL) {
     return import.meta.env.VITE_API_BASE_URL;
+  }
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
   }
   
   // For development: use localhost
