@@ -2,13 +2,22 @@ import axios from 'axios';
 
 // Determine API base URL based on environment
 const getBaseURL = () => {
-  // For development: use localhost
-  if (import.meta.env.MODE === 'development') {
-    return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
+  // Log environment variables for debugging
+  console.log('🔧 ENV MODE:', import.meta.env.MODE);
+  console.log('🔧 VITE_API_BASE_URL:', import.meta.env.VITE_API_BASE_URL);
+  
+  // Priority: always use VITE_API_BASE_URL if available
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
   }
   
-  // For production: use environment variable or current domain
-  return import.meta.env.VITE_API_BASE_URL || `${window.location.origin.replace(':3000', ':8080')}/api`;
+  // For development: use localhost
+  if (import.meta.env.MODE === 'development') {
+    return 'http://localhost:8080/api';
+  }
+  
+  // Fallback for production (if env var not set)
+  return `${window.location.origin}/api`;
 };
 
 // Create axios instance with base URL
