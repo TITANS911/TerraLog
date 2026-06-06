@@ -38,6 +38,12 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.error('❌ API ERROR DETAILS:');
+    console.error('URL:', error.config?.url);
+    console.error('Method:', error.config?.method);
+    console.error('Status Code:', error.response?.status);
+    console.error('Response Data:', error.response?.data);
+    
     if (error.response?.status === 401) {
       // Unauthorized - clear localStorage and redirect to login
       localStorage.clear();
