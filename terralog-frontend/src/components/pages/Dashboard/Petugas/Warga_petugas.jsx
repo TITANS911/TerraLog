@@ -457,24 +457,6 @@ const styles = {
   activePageButton: {
     backgroundColor: '#064D36',
     color: '#fff'
-  },
-
-  pageArrow: {
-    width: '30px',
-    height: '30px',
-    borderRadius: '8px',
-    border: '1px solid #DCE5E3',
-    backgroundColor: '#fff',
-    color: '#7B8494',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-
-  pageDots: {
-    color: '#7B8494',
-    fontWeight: '700'
   }
 };
 

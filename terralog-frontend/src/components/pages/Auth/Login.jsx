@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import Swal from 'sweetalert2';
+import { apiService } from '../../../services/apiService';
 import LoginIMG from '../../../assets/LoginIMG.png';
 
 const Login = () => {
@@ -27,9 +27,7 @@ const Login = () => {
     const handleGoogleCallback = async (response) => {
         setLoading(true);
         try {
-            const res = await axios.post('http://localhost:8080/api/auth/google-login', {
-                credential: response.credential
-            });
+            const res = await apiService.googleLogin(response.credential);
 
             if (res.data.success === true) {
                 saveUserDataToLocalStorage(res.data);
@@ -55,10 +53,11 @@ const Login = () => {
             }
         } catch (error) {
             console.error("Detail error Google login:", error);
+            const errorMessage = error.response?.data?.message || error.message || 'Gagal terhubung ke server backend!';
             Swal.fire({ 
                 icon: 'error', 
                 title: 'Koneksi Error', 
-                text: 'Gagal terhubung ke server backend!', 
+                text: errorMessage, 
                 confirmButtonColor: '#1b4332' 
             });
         } finally { 
@@ -110,42 +109,40 @@ const Login = () => {
     }, []);
 
     const handleLogin = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            const response = await axios.post('http://localhost:8080/api/auth/login', {
-                username: username, 
-                password: password
-            });
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const response = await apiService.login(username, password);
 
-            if (response.data.success === true) {
-                saveUserDataToLocalStorage(response.data);
-                
-                const role = response.data.role ? response.data.role.toString().trim().toUpperCase() : "";
+      if (response.data.success === true) {
+        saveUserDataToLocalStorage(response.data);
+        
+        const role = response.data.role ? response.data.role.toString().trim().toUpperCase() : "";
 
-                if (role === 'ADMIN') navigate('/admin/dashboard', { replace: true });
-                else if (role === 'PETUGAS') navigate('/petugas/dashboard', { replace: true });
-                else navigate('/dashboard', { replace: true });
-            } else {
-                Swal.fire({ 
-                    icon: 'error', 
-                    title: 'Login Gagal', 
-                    text: response.data.message || "Username atau password salah!", 
-                    confirmButtonColor: '#1b4332' 
-                });
-            }
-        } catch (error) {
-            console.error("Detail error login:", error);
-            Swal.fire({ 
-                icon: 'error', 
-                title: 'Koneksi Error', 
-                text: 'Gagal terhubung ke server backend!', 
-                confirmButtonColor: '#1b4332' 
-            });
-        } finally { 
-            setLoading(false); 
-        }
-    };
+        if (role === 'ADMIN') navigate('/admin/dashboard', { replace: true });
+        else if (role === 'PETUGAS') navigate('/petugas/dashboard', { replace: true });
+        else navigate('/dashboard', { replace: true });
+      } else {
+        Swal.fire({ 
+          icon: 'error', 
+          title: 'Login Gagal', 
+          text: response.data.message || "Username atau password salah!", 
+          confirmButtonColor: '#1b4332' 
+        });
+      }
+    } catch (error) {
+      console.error("Detail error login:", error);
+      const errorMessage = error.response?.data?.message || error.message || 'Gagal terhubung ke server backend!';
+      Swal.fire({ 
+        icon: 'error', 
+        title: 'Koneksi Error', 
+        text: errorMessage,
+        confirmButtonColor: '#1b4332' 
+      });
+    } finally {
+      setLoading(false); 
+    }
+  };
 
     return (
         <div style={styles.pageWrapper}>
